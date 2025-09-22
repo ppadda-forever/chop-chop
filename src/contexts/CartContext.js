@@ -69,10 +69,22 @@ export const CartProvider = ({ children }) => {
   useEffect(() => {
     const savedCart = localStorage.getItem('chop-chop-cart')
     if (savedCart) {
-      const parsedCart = JSON.parse(savedCart)
-      parsedCart.items.forEach(item => {
-        dispatch({ type: 'ADD_TO_CART', payload: item })
-      })
+      try {
+        const parsedCart = JSON.parse(savedCart)
+        if (parsedCart.items && Array.isArray(parsedCart.items)) {
+          // restaurant 정보가 있는 아이템만 복원
+          const validItems = parsedCart.items.filter(item => 
+            item.restaurant && item.restaurant.id
+          )
+          validItems.forEach(item => {
+            dispatch({ type: 'ADD_TO_CART', payload: item })
+          })
+        }
+      } catch (error) {
+        console.error('Error parsing saved cart:', error)
+        // 잘못된 데이터가 있으면 localStorage 클리어
+        localStorage.removeItem('chop-chop-cart')
+      }
     }
   }, [])
 
@@ -142,14 +154,17 @@ export const CartProvider = ({ children }) => {
   const getCartItemsByRestaurant = () => {
     const restaurantGroups = {}
     state.items.forEach(item => {
-      const restaurantId = item.restaurant.id
-      if (!restaurantGroups[restaurantId]) {
-        restaurantGroups[restaurantId] = {
-          restaurant: item.restaurant,
-          items: []
+      // 안전 검사: restaurant 정보가 있는지 확인
+      if (item.restaurant && item.restaurant.id) {
+        const restaurantId = item.restaurant.id
+        if (!restaurantGroups[restaurantId]) {
+          restaurantGroups[restaurantId] = {
+            restaurant: item.restaurant,
+            items: []
+          }
         }
+        restaurantGroups[restaurantId].items.push(item)
       }
-      restaurantGroups[restaurantId].items.push(item)
     })
     return Object.values(restaurantGroups)
   }
