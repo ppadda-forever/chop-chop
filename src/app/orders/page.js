@@ -43,6 +43,18 @@ export default function Orders() {
         isActive: status === 'DELIVERED'
       }
     ]
+    if (status === 'CANCELLED') {
+      // For cancelled orders, show a terminal cancelled state instead of delivered
+      return [
+        steps[0],
+        {
+          id: 'cancelled',
+          label: 'Cancelled',
+          isCompleted: true,
+          isActive: true
+        }
+      ]
+    }
     return steps
   }
 
@@ -51,6 +63,8 @@ export default function Orders() {
       return 'Delivered successfully!'
     } else if (status === 'PENDING') {
       return 'Expected in 25-35 minutes'
+    } else if (status === 'CANCELLED') {
+      return 'This order was cancelled'
     }
     return 'Time will be updated soon'
   }
@@ -141,11 +155,6 @@ export default function Orders() {
                       <h2 className="text-white font-bold text-lg font-jakarta">
                         {restaurantName}
                       </h2>
-                      {order.status === 'DELIVERED' && (
-                        <div className="px-3 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                          🎉 Delivered
-                        </div>
-                      )}
                     </div>
                   </div>
 
@@ -156,14 +165,22 @@ export default function Orders() {
                         <div key={step.id} className="flex gap-4 items-start">
                           <div className="flex flex-col items-center">
                             <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
-                              step.isCompleted 
-                                ? 'bg-chop-brown border-chop-brown' 
-                                : 'bg-white border-gray-300'
+                              step.id === 'cancelled'
+                                ? 'bg-red-100 border-red-300'
+                                : step.isCompleted
+                                  ? 'bg-chop-brown border-chop-brown'
+                                  : 'bg-white border-gray-300'
                             }`}>
-                              {step.isCompleted && (
-                                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                              {step.id === 'cancelled' ? (
+                                <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
+                              ) : (
+                                step.isCompleted && (
+                                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                                  </svg>
+                                )
                               )}
                             </div>
                             {stepIndex < trackingSteps.length - 1 && (
@@ -187,6 +204,11 @@ export default function Orders() {
                             {step.id === 'delivered' && !step.isCompleted && (
                               <p className="text-chop-orange text-sm mt-1 font-medium">
                                 Expected in 25-35 minutes
+                              </p>
+                            )}
+                            {step.id === 'cancelled' && (
+                              <p className="text-red-600 text-sm mt-1 font-medium">
+                                This order was cancelled
                               </p>
                             )}
                           </div>

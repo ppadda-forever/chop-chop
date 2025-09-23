@@ -1,12 +1,14 @@
 'use client'
 
 import React from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Header from '../../components/Header'
 import BottomNavigation from '../../components/BottomNavigation'
 
 export default function CheckoutConfirmation() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const orderId = searchParams.get('orderId')
 
   return (
     <div className="bg-chop-cream min-h-screen flex flex-col">
@@ -26,9 +28,11 @@ export default function CheckoutConfirmation() {
           <p className="text-chop-gray mb-4">
             Your order has been successfully placed and is being prepared.
           </p>
-          <p className="text-sm text-chop-gray">
-            Order ID: #12345
-          </p>
+          {orderId && (
+            <p className="text-sm text-chop-gray">
+              Order ID: #{orderId.slice(-8)}
+            </p>
+          )}
         </div>
 
         {/* Order Details */}

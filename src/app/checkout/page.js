@@ -70,7 +70,7 @@ export default function Checkout() {
       analytics.trackOrderComplete(order.id, total)
 
       clearCart() // Clear cart after successful order
-      router.push('/checkout-confirmation')
+      router.push(`/checkout-confirmation?orderId=${encodeURIComponent(order.id)}`)
     } catch (error) {
       console.error('Order failed:', error);
       alert(`Order failed: ${error.message}`);
@@ -162,7 +162,7 @@ export default function Checkout() {
           {accommodation && (
             <div className="mb-2 p-2 bg-chop-cream rounded-lg">
               <p className="text-sm text-chop-brown">
-                🏠 <strong>{accommodation.name}</strong> - Address auto-filled from QR scan
+                <strong>{accommodation.name}</strong> - Address auto-filled from QR scan
               </p>
             </div>
           )}
