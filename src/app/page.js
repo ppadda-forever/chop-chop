@@ -70,8 +70,12 @@ export default function Home() {
           ) : (
             <div className="flex gap-3 overflow-x-auto pb-4">
               {popularItems.map((item) => (
-                <div key={item.id} className="flex-shrink-0 w-40">
-                  <div className="bg-white rounded-lg overflow-hidden shadow-sm">
+                <div 
+                  key={item.id} 
+                  className="flex-shrink-0 w-40 cursor-pointer"
+                  onClick={() => router.push(`/restaurant/${item.restaurant.id}`)}
+                >
+                  <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                     <div 
                       className="h-40 bg-cover bg-center"
                       style={{ backgroundImage: `url(${item.image})` }}
@@ -80,11 +84,14 @@ export default function Home() {
                       <h3 className="font-medium text-chop-brown text-sm mb-1 font-jakarta">
                         {item.name}
                       </h3>
-                      <p className="text-chop-gray text-xs mb-2">
+                      <p className="text-chop-gray text-xs mb-2 line-clamp-2">
                         {item.description}
                       </p>
-                      <p className="text-chop-orange font-bold text-sm">
+                      <p className="text-chop-orange font-bold text-sm mb-1">
                         ₩{item.basePrice.toLocaleString()}
+                      </p>
+                      <p className="text-chop-gray text-xs">
+                        from {item.restaurant.name}
                       </p>
                     </div>
                   </div>

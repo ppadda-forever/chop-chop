@@ -103,7 +103,7 @@ export default function Orders() {
 
   return (
     <div className="bg-[#fcfaf7] min-h-screen flex flex-col">
-      <Header title="Order Tracking" showBackButton={true} />
+      <Header title="Order Tracking" showBackButton={false} />
       
       <div className="flex-1">
         {orders.length === 0 ? (

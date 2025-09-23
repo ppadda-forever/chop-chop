@@ -112,6 +112,8 @@ export const CartProvider = ({ children }) => {
         restaurant: menuItem.restaurant
       }
     })
+
+    return { success: true }
   }
 
   const removeFromCart = (cartId) => {
@@ -169,6 +171,45 @@ export const CartProvider = ({ children }) => {
     return Object.values(restaurantGroups)
   }
 
+  const checkMinOrderAmount = () => {
+    if (state.items.length === 0) return { isValid: false, message: '장바구니가 비어있습니다.' }
+    
+    const restaurant = state.items[0].restaurant
+    if (!restaurant) return { isValid: false, message: '레스토랑 정보를 찾을 수 없습니다.' }
+
+    const totalPrice = getTotalPrice()
+    const minOrderAmount = restaurant.minOrderAmount || 0
+
+    if (totalPrice < minOrderAmount) {
+      return {
+        isValid: false,
+        message: `Minimum order amount is ₩${minOrderAmount.toLocaleString()}. Please add ₩${(minOrderAmount - totalPrice).toLocaleString()} more to your order.`,
+        currentAmount: totalPrice,
+        minAmount: minOrderAmount,
+        shortfall: minOrderAmount - totalPrice
+      }
+    }
+
+    return { isValid: true }
+  }
+
+  const checkRestaurantRestriction = (newMenuItem) => {
+    if (state.items.length === 0) return { isValid: true }
+    
+    const currentRestaurantId = state.items[0].restaurant?.id
+    if (currentRestaurantId && currentRestaurantId !== newMenuItem.restaurant?.id) {
+      return {
+        isValid: false,
+        message: `You can only order from one restaurant at a time. Clear your cart to order from "${newMenuItem.restaurant?.name}".`,
+        currentRestaurant: state.items[0].restaurant?.name,
+        newRestaurant: newMenuItem.restaurant?.name,
+        needsClearCart: true
+      }
+    }
+
+    return { isValid: true }
+  }
+
   const value = {
     items: state.items,
     addToCart,
@@ -177,7 +218,9 @@ export const CartProvider = ({ children }) => {
     clearCart,
     getTotalPrice,
     getTotalItems,
-    getCartItemsByRestaurant
+    getCartItemsByRestaurant,
+    checkMinOrderAmount,
+    checkRestaurantRestriction
   }
 
   return (
