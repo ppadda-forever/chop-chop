@@ -71,7 +71,7 @@ export default function Home() {
     fetchData()
   }, [searchParams])
 
-  const heroImage = 'http://localhost:3845/assets/78f024ce7f20e63ca2612dae8b70848a74c3b4ec.png'
+  const heroImage = 'https://images.unsplash.com/photo-1590301157890-4810ed352733?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80'
 
   return (
     <div className="bg-white min-h-screen flex flex-col">

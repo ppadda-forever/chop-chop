@@ -101,25 +101,34 @@ export default function Orders() {
     )
   }
 
+  if (orders.length === 0) {
+    return (
+      <div className="bg-chop-cream min-h-screen flex flex-col">
+        <Header title="Order Tracking" showBackButton={false} />
+        
+        <div className="flex-1 flex flex-col items-center justify-center px-4">
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+            <span className="text-4xl">📄</span>
+          </div>
+          <h2 className="text-xl font-bold text-chop-brown mb-2 font-jakarta">
+            No orders yet
+          </h2>
+          <p className="text-chop-gray text-center mb-6">
+            Start ordering delicious food from your favorite restaurants!
+          </p>
+        </div>
+
+        <BottomNavigation />
+      </div>
+    )
+  }
+
   return (
-    <div className="bg-[#fcfaf7] min-h-screen flex flex-col">
+    <div className="bg-chop-cream min-h-screen flex flex-col">
       <Header title="Order Tracking" showBackButton={false} />
       
       <div className="flex-1">
-        {orders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 px-4">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <span className="text-2xl">📦</span>
-            </div>
-            <h3 className="text-lg font-medium text-chop-brown mb-2 font-jakarta">
-              No orders yet
-            </h3>
-            <p className="text-chop-gray text-center mb-4">
-              Start ordering delicious food from your favorite restaurants!
-            </p>
-          </div>
-        ) : (
-          <div className="px-4 py-5 space-y-6">
+        <div className="px-4 py-5 space-y-6">
             {orders.map((order, orderIndex) => {
               const trackingSteps = getOrderTrackingSteps(order.status)
               const restaurantName = getRestaurantName(order.orderItems)
@@ -260,8 +269,7 @@ export default function Orders() {
                 </div>
               )
             })}
-          </div>
-        )}
+        </div>
       </div>
 
       <BottomNavigation />

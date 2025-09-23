@@ -84,7 +84,7 @@ async function main() {
         nameCn: "泡菜汤专门店",
         areas: ['GANGNAM', 'MYEONGDONG'],
         category: 'KOREAN',
-        image: 'http://localhost:3845/assets/022787118fd78cb566b22005f5ad4838434e4b1e.png',
+        image: 'https://images.unsplash.com/photo-1574484284002-952d92456975?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
         minOrderAmount: 15000,
         isActive: true
       }
@@ -97,7 +97,7 @@ async function main() {
         nameCn: "烤肉盖饭店",
         areas: ['GANGNAM', 'HONGDAE'],
         category: 'KOREAN',
-        image: 'http://localhost:3845/assets/4b2974d8422b76790b77f1646bf9b9faf6fde9d0.png',
+        image: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
         minOrderAmount: 12000,
         isActive: true
       }
@@ -110,7 +110,7 @@ async function main() {
         nameCn: "调味炸鸡专门店",
         areas: ['HONGDAE', 'MYEONGDONG'],
         category: 'CHICKEN',
-        image: 'http://localhost:3845/assets/be8cc8da87b99ca2ec3292ffe888d5e3def8be22.png',
+        image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
         minOrderAmount: 18000,
         isActive: true
       }
@@ -123,7 +123,7 @@ async function main() {
         nameCn: "炒年糕摊",
         areas: ['GANGNAM', 'HONGDAE', 'MYEONGDONG'],
         category: 'BUNSIK',
-        image: 'http://localhost:3845/assets/4b2974d8422b76790b77f1646bf9b9faf6fde9d0.png',
+        image: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
         minOrderAmount: 8000,
         isActive: true
       }
@@ -136,7 +136,7 @@ async function main() {
         nameCn: "日式拉面店",
         areas: ['GANGNAM', 'ITAEWON'],
         category: 'ASIAN',
-        image: 'http://localhost:3845/assets/a1563db6423be213da8c0180e465b77ff08f8d72.png',
+        image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
         minOrderAmount: 12000,
         isActive: true
       }
@@ -149,7 +149,7 @@ async function main() {
         nameCn: "意大利披萨店",
         areas: ['GANGNAM', 'HONGDAE'],
         category: 'PIZZA',
-        image: 'http://localhost:3845/assets/04eabca8d4744c7876b28cca858d0c339639085b.png',
+        image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
         minOrderAmount: 20000,
         isActive: true
       }
@@ -176,7 +176,7 @@ async function main() {
         descriptionJp: '辛くて爽やかなキムチチゲ',
         descriptionCn: '辛辣清爽的泡菜汤',
         basePrice: 13000,
-        image: 'http://localhost:3845/assets/a1563db6423be213da8c0180e465b77ff08f8d72.png',
+        image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
         isPopular: true,
         isAvailable: true
       }
@@ -193,7 +193,7 @@ async function main() {
         descriptionJp: 'コクのあるテンジャンチゲ',
         descriptionCn: '浓郁的大酱汤',
         basePrice: 12000,
-        image: 'http://localhost:3845/assets/387cac7cf5de9526e0f1a6c973829841ad12060c.png',
+        image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
         isPopular: false,
         isAvailable: true
       }
@@ -215,7 +215,7 @@ async function main() {
         descriptionJp: '甘いプルコギとご飯の調和',
         descriptionCn: '甜烤肉与米饭的完美搭配',
         basePrice: 15600,
-        image: 'http://localhost:3845/assets/387cac7cf5de9526e0f1a6c973829841ad12060c.png',
+        image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
         isPopular: true,
         isAvailable: true
       }
@@ -232,7 +232,7 @@ async function main() {
         descriptionJp: '柔らかいカルビとご飯',
         descriptionCn: '嫩排骨配米饭',
         basePrice: 18000,
-        image: 'http://localhost:3845/assets/be8cc8da87b99ca2ec3292ffe888d5e3def8be22.png',
+        image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
         isPopular: false,
         isAvailable: true
       }
@@ -254,7 +254,7 @@ async function main() {
         nameJp: '甘辛いヤンニョムチキン',
         nameCn: '甜辣调味炸鸡',
         basePrice: 10400,
-        image: 'http://localhost:3845/assets/be8cc8da87b99ca2ec3292ffe888d5e3def8be22.png',
+        image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
         isPopular: true,
         isAvailable: true
       }
@@ -271,7 +271,7 @@ async function main() {
         nameJp: 'サクサクのフライドチキン',
         nameCn: '酥脆炸鸡',
         basePrice: 9500,
-        image: 'http://localhost:3845/assets/4b2974d8422b76790b77f1646bf9b9faf6fde9d0.png',
+        image: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
         isPopular: false,
         isAvailable: true
       }
@@ -293,7 +293,7 @@ async function main() {
         nameJp: '辛いトッポッキ',
         nameCn: '辣炒年糕',
         basePrice: 19500,
-        image: 'http://localhost:3845/assets/4b2974d8422b76790b77f1646bf9b9faf6fde9d0.png',
+        image: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
         isPopular: true,
         isAvailable: true
       }
@@ -310,7 +310,7 @@ async function main() {
         nameJp: '香ばしいスンデ',
         nameCn: '香浓血肠',
         basePrice: 8000,
-        image: 'http://localhost:3845/assets/a1563db6423be213da8c0180e465b77ff08f8d72.png',
+        image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
         isPopular: false,
         isAvailable: true
       }

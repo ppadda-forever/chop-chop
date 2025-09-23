@@ -25,8 +25,8 @@ export default function Cart() {
         <Header title="Cart" showBackButton={true} />
         
         <div className="flex-1 flex flex-col items-center justify-center px-4">
-          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-            <span className="text-6xl">🛒</span>
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+            <span className="text-4xl">🛒</span>
           </div>
           <h2 className="text-xl font-bold text-chop-brown mb-2 font-jakarta">
             Your cart is empty
