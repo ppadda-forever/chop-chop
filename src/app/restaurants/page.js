@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { getRestaurantsByCategory } from '../../services/clientApi'
+import { getRestaurants, getRestaurantsByCategory } from '../../services/clientApi'
 import Header from '../../components/Header'
 import BottomNavigation from '../../components/BottomNavigation'
 
 export default function Restaurants() {
   const router = useRouter()
-  const [selectedCategory, setSelectedCategory] = useState('KOREAN')
+  const [selectedCategory, setSelectedCategory] = useState(null) // null로 변경
   const [restaurants, setRestaurants] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -22,7 +22,9 @@ export default function Restaurants() {
     const fetchRestaurants = async () => {
       try {
         setLoading(true)
-        const data = await getRestaurantsByCategory(selectedCategory)
+        const data = selectedCategory 
+          ? await getRestaurantsByCategory(selectedCategory)
+          : await getRestaurants() // 카테고리가 null이면 전체 레스토랑 가져오기
         setRestaurants(data)
       } catch (error) {
         console.error('Error fetching restaurants:', error)
@@ -34,6 +36,11 @@ export default function Restaurants() {
     fetchRestaurants()
   }, [selectedCategory])
 
+  const handleCategoryClick = (category) => {
+    // 같은 카테고리를 클릭하면 해제, 다른 카테고리를 클릭하면 선택
+    setSelectedCategory(selectedCategory === category ? null : category)
+  }
+
   return (
     <div className="bg-chop-cream min-h-screen flex flex-col">
       <Header title="Restaurants" />
@@ -41,14 +48,14 @@ export default function Restaurants() {
       <div className="flex-1">
         {/* Category Filters */}
         <div className="px-3 py-3">
-          <div className="flex gap-3 overflow-x-auto">
+          <div className="flex gap-3 overflow-x-auto pb-2">
             {categories.map((category) => (
               <button
                 key={category}
-                onClick={() => setSelectedCategory(category)}
+                onClick={() => handleCategoryClick(category)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                   selectedCategory === category
-                    ? 'bg-chop-light-gray text-chop-dark-brown'
+                    ? 'bg-orange-500 text-white' // 선택된 카테고리는 주황색
                     : 'bg-chop-light-gray text-chop-dark-brown'
                 }`}
               >

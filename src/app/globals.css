@@ -26,3 +26,18 @@ body {
 .font-jakarta {
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
+
+/* 얇은 스크롤바 스타일 */
+.overflow-x-auto::-webkit-scrollbar {
+  height: 4px;
+}
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: rgba(139, 69, 19, 0.3);
+  border-radius: 2px;
+}
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 69, 19, 0.5);
+}
