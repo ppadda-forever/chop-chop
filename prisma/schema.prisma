@@ -147,6 +147,19 @@ model OrderOptionSelection {
   @@map("order_option_selections")
 }
 
+model Analytics {
+  id            String   @id @default(uuid())
+  sessionId     String   @map("session_id")  // 사용자 세션 식별
+  accommodationId String? @map("accommodation_id")  // QR 진입 시
+  eventType     AnalyticsEventType @map("event_type")
+  eventData     Json?    @map("event_data")  // 추가 데이터 (JSON)
+  ipAddress     String?  @map("ip_address")
+  userAgent     String?  @map("user_agent")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("analytics")
+}
+
 // Enum 정의
 enum OrderStatus {
   PENDING
@@ -212,4 +225,14 @@ enum OptionType {
   ADDITIONAL
 
   @@map("option_type")
+}
+
+enum AnalyticsEventType {
+  QR_ENTRY          // QR 코드로 진입
+  CART_ADD_ITEM     // 장바구니에 아이템 추가
+  CHECKOUT_VIEW     // 체크아웃 페이지 방문
+  ORDER_PLACE_CLICK // 주문 버튼 클릭
+  ORDER_COMPLETE    // 주문 완료
+
+  @@map("analytics_event_type")
 }

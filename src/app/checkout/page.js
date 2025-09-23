@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useCart } from '../../contexts/CartContext'
 import Header from '../../components/Header'
 import BottomNavigation from '../../components/BottomNavigation'
+import { analytics } from '../../utils/analytics'
 
 export default function Checkout() {
   const router = useRouter()
@@ -29,6 +30,8 @@ export default function Checkout() {
       setAccommodation(accommodationData)
       setDeliveryAddress(accommodationData.address)
     }
+    // 체크아웃 방문 추적 (세션+숙소 기준 최초 1회)
+    analytics.trackCheckoutViewOncePerSessionPerAccommodation()
   }, [])
 
   const handleOrder = async () => {
@@ -38,6 +41,8 @@ export default function Checkout() {
       alert(minOrderCheck.message);
       return;
     }
+
+    analytics.trackOrderPlaceClick(total) // 버튼 클릭 시점 추적
 
     setIsLoading(true);
     try {
@@ -59,6 +64,10 @@ export default function Checkout() {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to place order');
       }
+
+      // 주문 완료 추적
+      const order = await response.json()
+      analytics.trackOrderComplete(order.id, total)
 
       clearCart() // Clear cart after successful order
       router.push('/checkout-confirmation')

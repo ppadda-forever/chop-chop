@@ -1,6 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react'
+import { analytics } from '../utils/analytics'
 
 const CartContext = createContext()
 
@@ -112,6 +113,9 @@ export const CartProvider = ({ children }) => {
         restaurant: menuItem.restaurant
       }
     })
+
+    // 장바구니 추가 추적 (세션+숙소 기준 최초 1회)
+    analytics.trackCartAddOncePerSessionPerAccommodation(menuItem.id, menuItem.restaurant?.id)
 
     return { success: true }
   }

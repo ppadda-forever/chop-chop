@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { getPopularMenuItems, getAccommodationByQrCode } from '../services/clientApi'
 import Header from '../components/Header'
 import BottomNavigation from '../components/BottomNavigation'
+import { analytics, initializeSession } from '../utils/analytics'
 
 export default function Home() {
   const router = useRouter()
@@ -27,6 +28,8 @@ export default function Home() {
   }
 
   useEffect(() => {
+    initializeSession()
+    
     const fetchData = async () => {
       try {
         let currentAccommodation = null
@@ -41,6 +44,9 @@ export default function Home() {
             currentAccommodation = accommodationData
             // 숙소 정보를 sessionStorage에 저장
             sessionStorage.setItem('accommodation', JSON.stringify(accommodationData))
+            
+            // QR 진입 추적
+            analytics.trackQREntry(accommodationData.id)
           } catch (error) {
             console.error('Invalid QR code:', error)
           }
