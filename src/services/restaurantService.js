@@ -148,6 +148,42 @@ export async function getRestaurantsByArea(area) {
 }
 
 /**
+ * 지역과 카테고리별 레스토랑을 조회합니다
+ * @param {string} area - 지역 (GANGNAM, MYEONGDONG, etc.)
+ * @param {string} category - 카테고리 (KOREAN, CHICKEN, etc.)
+ * @returns {Promise<Array>} 해당 지역과 카테고리의 레스토랑 목록
+ */
+export async function getRestaurantsByAreaAndCategory(area, category) {
+  try {
+    const restaurants = await prisma.restaurant.findMany({
+      where: {
+        areas: {
+          has: area
+        },
+        category: category,
+        isActive: true
+      },
+      include: {
+        menuItems: {
+          where: {
+            isAvailable: true
+          },
+          take: 3
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+    
+    return restaurants
+  } catch (error) {
+    console.error('Error fetching restaurants by area and category:', error)
+    throw new Error('Failed to fetch restaurants by area and category')
+  }
+}
+
+/**
  * 인기 레스토랑을 조회합니다 (인기 메뉴가 있는 레스토랑)
  * @param {number} limit - 조회할 레스토랑 수 (기본값: 6)
  * @returns {Promise<Array>} 인기 레스토랑 목록

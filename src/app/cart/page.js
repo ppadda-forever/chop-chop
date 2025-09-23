@@ -82,16 +82,23 @@ export default function Cart() {
                       <h3 className="font-medium text-chop-brown text-sm mb-1 font-jakarta">
                         {item.name}
                       </h3>
-                      <p className="text-chop-gray text-xs mb-1">
-                        {item.description}
-                      </p>
                       
                       {/* Selected Options */}
-                      {Object.keys(item.selectedOptions).length > 0 && (
+                      {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
                         <div className="text-xs text-chop-gray">
-                          {Object.keys(item.selectedOptions).map(optionId => {
-                            // This would need to be enhanced to show option names
-                            return <span key={optionId}>+ Option</span>
+                          {Object.entries(item.selectedOptions).map(([optionId, option]) => {
+                            if (option && option.name) {
+                              return (
+                                <div key={optionId} className="flex items-center gap-1">
+                                  <span>•</span>
+                                  <span>{option.name}</span>
+                                  {option.price > 0 && (
+                                    <span className="text-chop-orange">(+₩{option.price.toLocaleString()})</span>
+                                  )}
+                                </div>
+                              )
+                            }
+                            return null
                           })}
                         </div>
                       )}

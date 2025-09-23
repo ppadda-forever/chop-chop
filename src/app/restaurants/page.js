@@ -8,9 +8,10 @@ import BottomNavigation from '../../components/BottomNavigation'
 
 export default function Restaurants() {
   const router = useRouter()
-  const [selectedCategory, setSelectedCategory] = useState(null) // null로 변경
+  const [selectedCategory, setSelectedCategory] = useState(null)
   const [restaurants, setRestaurants] = useState([])
   const [loading, setLoading] = useState(true)
+  const [accommodation, setAccommodation] = useState(null)
 
   const categories = [
     'KOREAN', 'CHICKEN', 'BUNSIK', 'PIZZA', 'ASIAN', 'BURGERS', 
@@ -19,12 +20,22 @@ export default function Restaurants() {
   ]
 
   useEffect(() => {
-    const fetchRestaurants = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true)
-        const data = selectedCategory 
-          ? await getRestaurantsByCategory(selectedCategory)
-          : await getRestaurants() // 카테고리가 null이면 전체 레스토랑 가져오기
+        
+        // sessionStorage에서 숙소 정보 확인
+        const savedAccommodation = sessionStorage.getItem('accommodation')
+        let currentAccommodation = null
+        
+        if (savedAccommodation) {
+          currentAccommodation = JSON.parse(savedAccommodation)
+          setAccommodation(currentAccommodation)
+        }
+
+        // 숙소가 있으면 해당 지역만, 없으면 전체 또는 카테고리별
+        const area = currentAccommodation?.area
+        const data = await getRestaurants(selectedCategory, area)
         setRestaurants(data)
       } catch (error) {
         console.error('Error fetching restaurants:', error)
@@ -33,7 +44,7 @@ export default function Restaurants() {
       }
     }
 
-    fetchRestaurants()
+    fetchData()
   }, [selectedCategory])
 
   const handleCategoryClick = (category) => {

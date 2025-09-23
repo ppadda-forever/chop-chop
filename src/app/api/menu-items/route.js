@@ -1,14 +1,19 @@
 import { NextResponse } from 'next/server'
-import { getPopularMenuItems } from '../../../services/menuService.js'
+import { getPopularMenuItems, getPopularMenuItemsByArea } from '../../../services/menuService.js'
 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const popular = searchParams.get('popular')
+    const area = searchParams.get('area')
     
     let menuItems
     if (popular === 'true') {
-      menuItems = await getPopularMenuItems()
+      if (area) {
+        menuItems = await getPopularMenuItemsByArea(area)
+      } else {
+        menuItems = await getPopularMenuItems()
+      }
     } else {
       menuItems = []
     }

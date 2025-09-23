@@ -1,17 +1,19 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { getPopularMenuItems } from '../services/clientApi'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { getPopularMenuItems, getAccommodationByQrCode } from '../services/clientApi'
 import Header from '../components/Header'
 import BottomNavigation from '../components/BottomNavigation'
 
 export default function Home() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [popularItems, setPopularItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState('English')
+  const [accommodation, setAccommodation] = useState(null)
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -25,19 +27,49 @@ export default function Home() {
   }
 
   useEffect(() => {
-    const fetchPopularItems = async () => {
+    const fetchData = async () => {
       try {
-        const items = await getPopularMenuItems()
+        let currentAccommodation = null
+        
+        // QR 코드 파라미터 확인
+        const qrCode = searchParams.get('qr')
+        
+        if (qrCode) {
+          try {
+            const accommodationData = await getAccommodationByQrCode(qrCode)
+            setAccommodation(accommodationData)
+            currentAccommodation = accommodationData
+            // 숙소 정보를 sessionStorage에 저장
+            sessionStorage.setItem('accommodation', JSON.stringify(accommodationData))
+          } catch (error) {
+            console.error('Invalid QR code:', error)
+          }
+        } else {
+          // QR 코드가 없으면 sessionStorage에서 기존 숙소 정보 확인
+          const savedAccommodation = sessionStorage.getItem('accommodation')
+          if (savedAccommodation) {
+            try {
+              currentAccommodation = JSON.parse(savedAccommodation)
+              setAccommodation(currentAccommodation)
+            } catch (error) {
+              console.error('Error parsing saved accommodation:', error)
+            }
+          }
+        }
+
+        // 인기 메뉴 아이템 조회 (숙소 지역이 있으면 해당 지역의 메뉴만)
+        const area = currentAccommodation?.area
+        const items = await getPopularMenuItems(area)
         setPopularItems(items)
       } catch (error) {
-        console.error('Error fetching popular items:', error)
+        console.error('Error fetching data:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchPopularItems()
-  }, [])
+    fetchData()
+  }, [searchParams])
 
   const heroImage = 'http://localhost:3845/assets/78f024ce7f20e63ca2612dae8b70848a74c3b4ec.png'
 
@@ -96,6 +128,27 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Accommodation Info Banner (if QR scanned) */}
+      {accommodation && (
+        <div className="bg-chop-cream px-4 py-3 border-b border-chop-border">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-chop-orange rounded-full flex items-center justify-center">
+              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-chop-dark-brown">
+                Delivering to: {accommodation.name}
+              </p>
+              <p className="text-xs text-chop-brown">
+                {accommodation.address}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       
       <div className="flex-1">
         {/* Hero Section */}

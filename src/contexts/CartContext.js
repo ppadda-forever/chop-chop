@@ -135,9 +135,8 @@ export const CartProvider = ({ children }) => {
   const calculateItemPrice = (menuItem, selectedOptions) => {
     let totalPrice = menuItem.basePrice
     
-    Object.keys(selectedOptions).forEach(optionId => {
-      const option = menuItem.menuOptions?.find(opt => opt.id === optionId)
-      if (option) {
+    Object.values(selectedOptions).forEach(option => {
+      if (option && option.price) {
         totalPrice += option.price
       }
     })

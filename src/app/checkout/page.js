@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '../../contexts/CartContext'
 import Header from '../../components/Header'
@@ -12,13 +12,24 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState('card')
   const [deliveryAddress, setDeliveryAddress] = useState('')
   const [notes, setNotes] = useState('')
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
+  const [accommodation, setAccommodation] = useState(null)
   
   const cartGroups = getCartItemsByRestaurant()
   const subtotal = getTotalPrice()
   const deliveryFee = 3000
   const total = subtotal + deliveryFee
   const minOrderCheck = checkMinOrderAmount()
+
+  useEffect(() => {
+    // sessionStorage에서 숙소 정보 확인하고 주소 자동 입력
+    const savedAccommodation = sessionStorage.getItem('accommodation')
+    if (savedAccommodation) {
+      const accommodationData = JSON.parse(savedAccommodation)
+      setAccommodation(accommodationData)
+      setDeliveryAddress(accommodationData.address)
+    }
+  }, [])
 
   const handleOrder = async () => {
     // 최소 주문 금액 체크
@@ -139,12 +150,22 @@ export default function Checkout() {
           <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
             Delivery Address
           </h2>
+          {accommodation && (
+            <div className="mb-2 p-2 bg-chop-cream rounded-lg">
+              <p className="text-sm text-chop-brown">
+                🏠 <strong>{accommodation.name}</strong> - Address auto-filled from QR scan
+              </p>
+            </div>
+          )}
           <textarea
             value={deliveryAddress}
-            onChange={(e) => setDeliveryAddress(e.target.value)}
-            placeholder="Enter your delivery address..."
-            className="w-full p-3 border border-chop-border rounded-lg text-chop-brown"
+            onChange={(e) => accommodation ? null : setDeliveryAddress(e.target.value)}
+            placeholder={accommodation ? "Address auto-filled from accommodation" : "Enter your delivery address..."}
+            className={`w-full p-3 border border-chop-border rounded-lg text-chop-brown ${
+              accommodation ? 'bg-gray-100 cursor-not-allowed' : ''
+            }`}
             rows={3}
+            disabled={!!accommodation}
           />
         </div>
 

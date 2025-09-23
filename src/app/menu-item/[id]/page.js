@@ -28,10 +28,10 @@ export default function MenuOption() {
         const initialOptions = {}
         data.menuOptions.forEach(option => {
           if (option.isRequired && option.type === 'SIZE') {
-            initialOptions[option.id] = option.id
+            initialOptions[option.id] = option
           }
           if (option.isRequired && option.type === 'SPICY') {
-            initialOptions[option.id] = option.id
+            initialOptions[option.id] = option
           }
         })
         setSelectedOptions(initialOptions)
@@ -66,23 +66,24 @@ export default function MenuOption() {
   const handleOptionChange = (optionId, optionType) => {
     setSelectedOptions(prev => {
       const newOptions = { ...prev }
+      const option = menuItem.menuOptions.find(opt => opt.id === optionId)
       
       // For single-select options (SIZE, SPICY), replace the previous selection
       if (optionType === 'SIZE' || optionType === 'SPICY') {
         // Remove previous selection of the same type
         Object.keys(newOptions).forEach(key => {
-          const option = menuItem.menuOptions.find(opt => opt.id === key)
-          if (option && option.type === optionType) {
+          const existingOption = menuItem.menuOptions.find(opt => opt.id === key)
+          if (existingOption && existingOption.type === optionType) {
             delete newOptions[key]
           }
         })
-        newOptions[optionId] = optionId
+        newOptions[optionId] = option
       } else {
         // For multi-select options (ADDITIONAL), toggle
         if (newOptions[optionId]) {
           delete newOptions[optionId]
         } else {
-          newOptions[optionId] = optionId
+          newOptions[optionId] = option
         }
       }
       
@@ -94,9 +95,8 @@ export default function MenuOption() {
     let totalPrice = menuItem.basePrice
     
     // Add selected options prices
-    Object.keys(selectedOptions).forEach(optionId => {
-      const option = menuItem.menuOptions.find(opt => opt.id === optionId)
-      if (option) {
+    Object.values(selectedOptions).forEach(option => {
+      if (option && option.price) {
         totalPrice += option.price
       }
     })
@@ -223,9 +223,14 @@ export default function MenuOption() {
         )}
 
         {/* Quantity Selector */}
-        <div className="bg-chop-cream h-14 flex items-center justify-between px-4">
-          <span className="text-chop-brown text-base">Quantity</span>
-          <div className="flex items-center gap-2">
+        <div className="px-4 py-4">
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-chop-brown mb-4 font-jakarta">
+              Quantity
+            </h2>
+          <div className="bg-chop-cream h-14 flex items-center justify-between px-4">
+            <span></span>
+            <div className="flex items-center gap-2">
             <button
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
               className="w-7 h-7 rounded-full bg-chop-border flex items-center justify-center text-chop-brown font-medium"
@@ -241,6 +246,8 @@ export default function MenuOption() {
             >
               +
             </button>
+            </div>
+          </div>
           </div>
         </div>
       </div>

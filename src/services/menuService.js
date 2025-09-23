@@ -118,6 +118,55 @@ export async function getPopularMenuItems(limit = 6) {
 }
 
 /**
+ * 특정 지역의 인기 메뉴 아이템을 조회합니다
+ * @param {string} area - 지역 코드 (예: GANGNAM, HONGDAE)
+ * @param {number} limit - 조회할 메뉴 아이템 수 (기본값: 6)
+ * @returns {Promise<Array>} 해당 지역의 인기 메뉴 아이템 목록
+ */
+export async function getPopularMenuItemsByArea(area, limit = 6) {
+  try {
+    const menuItems = await prisma.menuItem.findMany({
+      where: {
+        isPopular: true,
+        isAvailable: true,
+        restaurant: {
+          areas: {
+            has: area
+          },
+          isActive: true
+        }
+      },
+      include: {
+        restaurant: {
+          select: {
+            id: true,
+            name: true,
+            category: true
+          }
+        },
+        menuOptions: {
+          where: {
+            isActive: true
+          },
+          orderBy: {
+            sortOrder: 'asc'
+          }
+        }
+      },
+      take: limit,
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+    
+    return menuItems
+  } catch (error) {
+    console.error('Error fetching popular menu items by area:', error)
+    throw new Error('Failed to fetch popular menu items by area')
+  }
+}
+
+/**
  * 특정 레스토랑의 메뉴 아이템을 조회합니다
  * @param {string} restaurantId - 레스토랑 ID
  * @returns {Promise<Array>} 해당 레스토랑의 메뉴 아이템 목록
