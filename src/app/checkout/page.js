@@ -12,23 +12,43 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState('card')
   const [deliveryAddress, setDeliveryAddress] = useState('')
   const [notes, setNotes] = useState('')
+  const [isLoading, setIsLoading] = useState(false);
   
   const cartGroups = getCartItemsByRestaurant()
   const subtotal = getTotalPrice()
   const deliveryFee = 3000
   const total = subtotal + deliveryFee
 
-  const handleOrder = () => {
-    // Order logic here
-    console.log('Order placed:', {
-      items,
-      paymentMethod,
-      deliveryAddress,
-      notes,
-      total
-    })
-    clearCart() // Clear cart after successful order
-    router.push('/checkout-confirmation')
+  const handleOrder = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items,
+          paymentMethod,
+          notes,
+          total,
+          deliveryFee,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to place order');
+      }
+
+      clearCart() // Clear cart after successful order
+      router.push('/checkout-confirmation')
+    } catch (error) {
+      console.error('Order failed:', error);
+      alert(`Order failed: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -139,9 +159,10 @@ export default function Checkout() {
       <div className="px-4 py-3 bg-chop-cream border-t border-chop-border">
         <button 
           onClick={handleOrder}
-          className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors"
+          disabled={isLoading || items.length === 0}
+          className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors disabled:bg-gray-400"
         >
-          Place Order (₩{total.toLocaleString()})
+          {isLoading ? 'Placing Order...' : `Place Order (₩${total.toLocaleString()})`}
         </button>
       </div>
 

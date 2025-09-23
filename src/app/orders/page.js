@@ -1,60 +1,115 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Header from '../../components/Header'
 import BottomNavigation from '../../components/BottomNavigation'
 
 export default function Orders() {
-  // Mock order data
-  const orders = [
-    {
-      id: '12345',
-      restaurant: '김치찌개 전문점',
-      status: 'Delivered',
-      date: '2024-01-15',
-      total: 18000,
-      items: ['김치찌개', '된장찌개']
-    },
-    {
-      id: '12344',
-      restaurant: '양념치킨 전문점',
-      status: 'In Progress',
-      date: '2024-01-14',
-      total: 25000,
-      items: ['양념치킨', '후라이드 치킨']
-    },
-    {
-      id: '12343',
-      restaurant: '불고기 덮밥집',
-      status: 'Delivered',
-      date: '2024-01-13',
-      total: 15600,
-      items: ['불고기 덮밥']
-    }
-  ]
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Delivered':
-        return 'text-green-600 bg-green-100'
-      case 'In Progress':
-        return 'text-blue-600 bg-blue-100'
-      case 'Cancelled':
-        return 'text-red-600 bg-red-100'
-      default:
-        return 'text-gray-600 bg-gray-100'
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch('/api/orders')
+        if (response.ok) {
+          const data = await response.json()
+          setOrders(data)
+        } else {
+          console.error('Failed to fetch orders')
+        }
+      } catch (error) {
+        console.error('Error fetching orders:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchOrders()
+  }, [])
+
+  const getOrderTrackingSteps = (status) => {
+    const steps = [
+      {
+        id: 'placed',
+        label: 'Order Placed',
+        isCompleted: true,
+        isActive: status === 'PENDING'
+      },
+      {
+        id: 'delivered',
+        label: 'Delivered',
+        isCompleted: status === 'DELIVERED',
+        isActive: status === 'DELIVERED'
+      }
+    ]
+    return steps
+  }
+
+  const getEstimatedTime = (status) => {
+    if (status === 'DELIVERED') {
+      return 'Delivered successfully!'
+    } else if (status === 'PENDING') {
+      return 'Expected in 25-35 minutes'
+    }
+    return 'Time will be updated soon'
+  }
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString)
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today'
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday'
+    } else {
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      })
     }
   }
 
+  const formatTime = (dateString) => {
+    const date = new Date(dateString)
+    return date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false 
+    })
+  }
+
+  const getRestaurantName = (orderItems) => {
+    if (orderItems.length > 0 && orderItems[0].menuItem?.restaurant) {
+      return orderItems[0].menuItem.restaurant.name
+    }
+    return 'Unknown Restaurant'
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-chop-cream min-h-screen flex flex-col">
+        <Header title="My Orders" showBackButton={false} />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-chop-brown">Loading...</div>
+        </div>
+        <BottomNavigation />
+      </div>
+    )
+  }
+
   return (
-    <div className="bg-chop-cream min-h-screen flex flex-col">
-      <Header title="My Orders" showBackButton={false} />
+    <div className="bg-[#fcfaf7] min-h-screen flex flex-col">
+      <Header title="Order Tracking" showBackButton={true} />
       
-      <div className="flex-1 px-4 py-5">
+      <div className="flex-1">
         {orders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64">
+          <div className="flex flex-col items-center justify-center h-64 px-4">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <span className="text-2xl">📋</span>
+              <span className="text-2xl">📦</span>
             </div>
             <h3 className="text-lg font-medium text-chop-brown mb-2 font-jakarta">
               No orders yet
@@ -64,42 +119,147 @@ export default function Orders() {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {orders.map((order) => (
-              <div key={order.id} className="bg-white rounded-lg p-4">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h3 className="font-medium text-chop-brown font-jakarta">
-                      {order.restaurant}
-                    </h3>
-                    <p className="text-sm text-chop-gray">
-                      Order #{order.id} • {order.date}
-                    </p>
+          <div className="px-4 py-5 space-y-6">
+            {orders.map((order, orderIndex) => {
+              const trackingSteps = getOrderTrackingSteps(order.status)
+              const restaurantName = getRestaurantName(order.orderItems)
+              
+              return (
+                <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                  {/* Order Header */}
+                  <div className="bg-gradient-to-r from-chop-orange to-orange-500 px-6 py-4">
+                    <div className="flex justify-between items-center">
+                      <h2 className="text-white font-bold text-lg font-jakarta">
+                        {restaurantName}
+                      </h2>
+                      {order.status === 'DELIVERED' && (
+                        <div className="px-3 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                          🎉 Delivered
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                    {order.status}
-                  </span>
+
+                  {/* Order Tracking Steps */}
+                  <div className="px-6 py-5">
+                    <div className="space-y-4">
+                      {trackingSteps.map((step, stepIndex) => (
+                        <div key={step.id} className="flex gap-4 items-start">
+                          <div className="flex flex-col items-center">
+                            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
+                              step.isCompleted 
+                                ? 'bg-chop-brown border-chop-brown' 
+                                : 'bg-white border-gray-300'
+                            }`}>
+                              {step.isCompleted && (
+                                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                                </svg>
+                              )}
+                            </div>
+                            {stepIndex < trackingSteps.length - 1 && (
+                              <div className="w-0.5 h-12 bg-gray-200 mt-2" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-h-[32px] flex flex-col justify-center">
+                            <h3 className="font-semibold text-chop-brown text-base">
+                              {step.label}
+                            </h3>
+                            {step.id === 'placed' && (
+                              <p className="text-chop-gray text-sm mt-1">
+                                Order #{order.id.slice(-8)} • {formatDate(order.createdAt)} at {formatTime(order.createdAt)}
+                              </p>
+                            )}
+                            {step.id === 'delivered' && step.isCompleted && (
+                              <p className="text-green-600 text-sm mt-1 font-medium">
+                                Successfully delivered!
+                              </p>
+                            )}
+                            {step.id === 'delivered' && !step.isCompleted && (
+                              <p className="text-chop-orange text-sm mt-1 font-medium">
+                                Expected in 25-35 minutes
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Order Items */}
+                  <div className="px-6 pb-5">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h3 className="font-semibold text-chop-brown mb-3 text-base">
+                        Order Details
+                      </h3>
+                      <div className="space-y-4">
+                        {order.orderItems.map((item, index) => (
+                          <div key={index} className="border-b border-gray-200 pb-3 last:border-b-0 last:pb-0">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-base text-chop-brown font-medium">{item.menuItem.name}</span>
+                                  <span className="text-sm text-chop-orange font-medium">
+                                    ×{item.quantity}
+                                  </span>
+                                </div>
+                                
+                                {/* Menu Options */}
+                                {item.optionSelections && item.optionSelections.length > 0 && (
+                                  <div className="ml-8 space-y-1">
+                                    {item.optionSelections.map((option, optionIndex) => (
+                                      <div key={optionIndex} className="flex items-center gap-2">
+                                        <span className="text-xs text-gray-400">•</span>
+                                        <span className="text-sm text-chop-gray">
+                                          {option.menuOption.name}
+                                          {option.menuOption.price > 0 && (
+                                            <span className="text-chop-orange ml-1">
+                                              (+₩{option.menuOption.price.toLocaleString()})
+                                            </span>
+                                          )}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                
+                                {/* Unit Price */}
+                                <div className="ml-8 mt-1">
+                                  <span className="text-xs text-chop-gray">
+                                    ₩{item.unitPrice.toLocaleString()}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="text-right ml-4">
+                                <span className="text-base text-chop-brown font-semibold">
+                                  ₩{(item.unitPrice * item.quantity).toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Order Summary */}
+                      <div className="border-t border-gray-200 mt-4 pt-4 space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-chop-gray">Subtotal:</span>
+                          <span className="text-chop-brown">₩{(order.totalAmount - order.deliveryFee).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-chop-gray">Delivery fee:</span>
+                          <span className="text-chop-brown">₩{order.deliveryFee.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between text-lg font-bold border-t border-gray-200 pt-3">
+                          <span className="text-chop-brown">Total:</span>
+                          <span className="text-chop-orange">₩{order.totalAmount.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="mb-3">
-                  <p className="text-sm text-chop-brown mb-1">Items:</p>
-                  <p className="text-sm text-chop-gray">
-                    {order.items.join(', ')}
-                  </p>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-chop-orange font-bold">
-                    ₩{order.total.toLocaleString()}
-                  </span>
-                  {order.status === 'Delivered' && (
-                    <button className="text-chop-brown text-sm font-medium">
-                      Reorder
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
