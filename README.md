@@ -1,6 +1,6 @@
 # Chop Chop - Korean Food Delivery App
 
-A modern food delivery web application built with React and Prisma, featuring Korean cuisine and local Seoul restaurants with full database integration.
+A modern food delivery web application built with Next.js and Prisma, featuring Korean cuisine and local Seoul restaurants with full database integration, QR code-based accommodation selection, and real-time order tracking.
 
 ## Features
 
@@ -8,19 +8,24 @@ A modern food delivery web application built with React and Prisma, featuring Ko
 - **Restaurants Page**: Browse restaurants by category with real-time filtering
 - **Restaurant Menu**: View individual restaurant menus with dynamic options
 - **Menu Customization**: Size, spice level, and add-on options
+- **Shopping Cart**: Persistent cart with restaurant grouping and minimum order validation
+- **Checkout Flow**: Complete order placement with accommodation-based delivery
+- **Order Tracking**: Real-time order status with timeline visualization
+- **QR Code Integration**: Accommodation selection via QR code scanning
+- **Time-based Order Filtering**: Smart order history based on accommodation and time windows
 - **Database Integration**: Full Prisma + Supabase integration
 - **Responsive Design**: Mobile-first design optimized for food delivery
 - **Modern UI**: Clean, Korean-inspired design with warm colors
 
 ## Tech Stack
 
+- **Next.js 14** - Full-stack React framework with App Router
 - **React 18** - Frontend framework
-- **Vite** - Build tool and development server
 - **Tailwind CSS** - Utility-first CSS framework
-- **React Router** - Client-side routing
 - **Prisma** - Database ORM
 - **Supabase** - PostgreSQL database
 - **Plus Jakarta Sans** - Modern typography
+- **Context API** - State management for cart and accommodation
 
 ## Getting Started
 
@@ -34,7 +39,7 @@ A modern food delivery web application built with React and Prisma, featuring Ko
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd chop-chop-2
+cd chop-chop
 ```
 
 2. Install dependencies:
@@ -54,10 +59,10 @@ npm install
 4. Set up the database:
 ```bash
 # Push the schema to your database
-npm run db:push
+npx prisma db push
 
 # Seed the database with sample data
-npm run db:seed
+npx prisma db seed
 ```
 
 5. Start the development server:
@@ -65,46 +70,65 @@ npm run db:seed
 npm run dev
 ```
 
-6. Open your browser and navigate to `http://localhost:5173`
+6. Open your browser and navigate to `http://localhost:3000`
 
 ### Available Scripts
 
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
-- `npm run preview` - Preview production build
+- `npm run start` - Start production server
 - `npm run lint` - Run ESLint
-- `npm run db:push` - Push schema to database
-- `npm run db:seed` - Seed database with sample data
-- `npm run db:studio` - Open Prisma Studio
+- `npx prisma db push` - Push schema to database
+- `npx prisma db seed` - Seed database with sample data
+- `npx prisma studio` - Open Prisma Studio
 
 ## Project Structure
 
 ```
 src/
-├── components/          # Reusable UI components
+├── app/                    # Next.js App Router pages
+│   ├── api/               # API routes
+│   │   ├── accommodations/
+│   │   ├── analytics/
+│   │   ├── menu-items/
+│   │   ├── orders/
+│   │   └── restaurants/
+│   ├── cart/              # Shopping cart page
+│   ├── checkout/          # Checkout flow
+│   ├── checkout-confirmation/
+│   ├── help/              # Help page
+│   ├── menu-item/         # Individual menu item pages
+│   ├── orders/            # Order tracking page
+│   ├── restaurant/        # Individual restaurant pages
+│   ├── restaurants/        # Restaurant listing page
+│   ├── globals.css        # Global styles
+│   ├── layout.js          # Root layout
+│   └── page.js            # Home page
+├── components/             # Reusable UI components
 │   ├── BottomNavigation.jsx
 │   └── Header.jsx
-├── pages/              # Main application pages
-│   ├── Home.jsx
-│   ├── Restaurants.jsx
-│   ├── RestaurantMenu.jsx
-│   ├── MenuOption.jsx
-│   ├── Checkout.jsx
-│   ├── CheckoutConfirmation.jsx
-│   └── Help.jsx
-├── services/           # API services
-│   └── api.js
-├── lib/               # Utility libraries
-│   └── prisma.js
-├── data/              # Mock data and constants
+├── contexts/              # React Context providers
+│   └── CartContext.js      # Shopping cart state management
+├── services/              # API services
+│   ├── accommodationService.js
+│   ├── analyticsService.js
+│   ├── api.js
+│   ├── clientApi.js
+│   ├── menuService.js
+│   ├── mockApi.js
+│   ├── orderService.js
+│   └── restaurantService.js
+├── lib/                   # Utility libraries
+│   └── prisma.js          # Prisma client
+├── data/                  # Mock data and constants
 │   └── mockData.js
-├── App.jsx            # Main application component
-├── main.jsx          # Application entry point
-└── index.css         # Global styles
+└── utils/                 # Utility functions
+    └── analytics.js       # Analytics tracking
 
 prisma/
-├── schema.prisma     # Database schema
-└── seed.js          # Database seeding script
+├── migrations/            # Database migrations
+├── schema.prisma         # Database schema
+└── seed.js               # Database seeding script
 ```
 
 ## Design System
@@ -135,11 +159,39 @@ The app uses a custom color palette inspired by Korean aesthetics:
 - Add to cart functionality
 - Order button with total price
 
-✅ **Menu Option Page**
+✅ **Menu Customization**
 - Dynamic menu customization options
 - Size, spice level, and add-on selections
 - Real-time price calculation
 - Database-driven option management
+
+✅ **Shopping Cart**
+- Persistent cart with restaurant grouping
+- Minimum order amount validation
+- Real-time price calculation
+- Context-based state management
+
+✅ **Checkout Flow**
+- Complete order placement process
+- Accommodation-based delivery address
+- Payment method selection
+- Order confirmation with real order ID
+
+✅ **Order Tracking**
+- Real-time order status visualization
+- Timeline-based progress tracking
+- Order history with time-based filtering
+- Status indicators (Pending, Delivered, Cancelled)
+
+✅ **QR Code Integration**
+- Accommodation selection via QR code scanning
+- Session-based accommodation storage
+- Automatic address population
+
+✅ **Time-based Order Filtering**
+- Smart order history based on accommodation
+- Time window logic (11am cutoff)
+- Yesterday 3pm to today 11am / Today 11am to tomorrow
 
 ✅ **Database Integration**
 - Full Prisma + Supabase integration
@@ -150,17 +202,42 @@ The app uses a custom color palette inspired by Korean aesthetics:
 ✅ **Navigation**
 - Bottom navigation bar
 - Header with back button and cart icon
-- React Router for page navigation
+- Next.js App Router for page navigation
+
+## Key Features
+
+### 🛒 Shopping Cart System
+- Restaurant-grouped cart items
+- Minimum order validation
+- Real-time price calculation
+- Persistent cart state
+
+### 📱 QR Code Integration
+- Accommodation selection via QR scanning
+- Automatic address population
+- Session-based accommodation storage
+
+### 📦 Order Management
+- Complete checkout flow
+- Real order ID generation
+- Order status tracking (Pending, Delivered, Cancelled)
+- Time-based order filtering
+
+### 🏨 Accommodation-based Delivery
+- Smart order history based on accommodation
+- Time window logic (11am cutoff)
+- Yesterday 3pm to today 11am / Today 11am to tomorrow
 
 ## Future Enhancements
 
 - User authentication and profiles
 - Real payment integration
-- Order tracking and history
 - Restaurant reviews and ratings
 - Search functionality
 - Location-based delivery
 - Push notifications
+- Multi-language support
+- Advanced analytics dashboard
 
 ## Contributing
 
