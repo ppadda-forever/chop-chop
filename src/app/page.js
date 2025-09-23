@@ -1,13 +1,13 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getPopularMenuItems, getAccommodationByQrCode } from '../services/clientApi'
 import Header from '../components/Header'
 import BottomNavigation from '../components/BottomNavigation'
 import { analytics, initializeSession } from '../utils/analytics'
 
-export default function Home() {
+function HomeContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [popularItems, setPopularItems] = useState([])
@@ -75,7 +75,7 @@ export default function Home() {
     }
 
     fetchData()
-  }, [searchParams])
+  }, [])
 
   const heroImage = 'https://images.unsplash.com/photo-1590301157890-4810ed352733?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80'
 
@@ -228,5 +228,17 @@ export default function Home() {
 
       <BottomNavigation />
     </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="bg-white min-h-screen flex items-center justify-center">
+        <div className="text-chop-brown">Loading...</div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   )
 }
