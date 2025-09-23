@@ -57,6 +57,7 @@ export default function Checkout() {
           notes,
           total,
           deliveryFee,
+          accommodationId: accommodation?.id || null,
         }),
       });
 

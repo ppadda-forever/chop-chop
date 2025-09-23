@@ -11,7 +11,12 @@ export default function Orders() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch('/api/orders')
+        // sessionStorage에서 accommodation 정보 가져오기
+        const savedAccommodation = sessionStorage.getItem('accommodation')
+        const accommodationId = savedAccommodation ? JSON.parse(savedAccommodation).id : null
+        
+        const url = accommodationId ? `/api/orders?accommodationId=${accommodationId}` : '/api/orders'
+        const response = await fetch(url)
         if (response.ok) {
           const data = await response.json()
           setOrders(data)
