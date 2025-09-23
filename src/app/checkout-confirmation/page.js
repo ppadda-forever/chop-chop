@@ -1,11 +1,11 @@
 'use client'
 
-import React from 'react'
+import React, { Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Header from '../../components/Header'
 import BottomNavigation from '../../components/BottomNavigation'
 
-export default function CheckoutConfirmation() {
+function CheckoutConfirmationContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
@@ -93,5 +93,21 @@ export default function CheckoutConfirmation() {
 
       <BottomNavigation />
     </div>
+  )
+}
+
+export default function CheckoutConfirmation() {
+  return (
+    <Suspense fallback={
+      <div className="bg-chop-cream min-h-screen flex flex-col">
+        <Header title="Order Confirmed" showBackButton={false} />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-chop-brown">Loading...</div>
+        </div>
+        <BottomNavigation />
+      </div>
+    }>
+      <CheckoutConfirmationContent />
+    </Suspense>
   )
 }
