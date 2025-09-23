@@ -30,7 +30,7 @@ export default function Home() {
 
   return (
     <div className="bg-white min-h-screen flex flex-col">
-      <Header title="Chop Chop" showCartButton={true} />
+      <Header title="Chop Chop" />
       
       <div className="flex-1">
         {/* Hero Section */}
