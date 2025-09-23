@@ -33,7 +33,7 @@ export default function RestaurantMenu() {
   }, [id])
 
   const handleAddToCart = (item) => {
-    addToCart(item, {}, 1)
+    router.push(`/menu-item/${item.id}`)
   }
 
   if (loading) {
