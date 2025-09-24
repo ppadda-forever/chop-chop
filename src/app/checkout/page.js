@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '../../contexts/CartContext'
 import Header from '../../components/Header'
@@ -8,6 +8,7 @@ import BottomNavigation from '../../components/BottomNavigation'
 import { analytics } from '../../utils/analytics'
 import PayPalProvider from '../../components/PayPalProvider'
 import PayPalButton from '../../components/PayPalButton'
+import { getCachedExchangeRate } from '../../lib/exchangeRateCache'
 
 export default function Checkout() {
   const router = useRouter()
@@ -17,6 +18,8 @@ export default function Checkout() {
   const [notes, setNotes] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [accommodation, setAccommodation] = useState(null)
+  const [exchangeRate, setExchangeRate] = useState(null)
+  const [usdAmount, setUsdAmount] = useState(0)
   
   const cartGroups = getCartItemsByRestaurant()
   const subtotal = getTotalPrice()
@@ -35,6 +38,30 @@ export default function Checkout() {
     // 체크아웃 방문 추적 (세션+숙소 기준 최초 1회)
     analytics.trackCheckoutViewOncePerSessionPerAccommodation()
   }, [])
+
+  useEffect(() => {
+    // PayPal 결제 방식이 선택되었을 때 환율 조회
+    if (paymentMethod === 'paypal') {
+      fetchExchangeRate()
+    }
+  }, [paymentMethod, total])
+
+  const fetchExchangeRate = async () => {
+    try {
+      const rate = await getCachedExchangeRate()
+      setExchangeRate(rate)
+      
+      // KRW를 USD로 변환
+      const converted = (total * rate.krwToUsd).toFixed(2)
+      setUsdAmount(parseFloat(converted))
+    } catch (error) {
+      console.error('Failed to fetch exchange rate:', error)
+      // 폴백: 고정 환율 사용
+      const fallbackRate = 1300
+      const converted = (total / fallbackRate).toFixed(2)
+      setUsdAmount(parseFloat(converted))
+    }
+  }
 
   const handleOrder = async (paymentDetails = null) => {
     // 최소 주문 금액 체크
@@ -101,6 +128,20 @@ export default function Checkout() {
     alert('PayPal 결제가 취소되었습니다.')
   }
 
+  // 결제하기 버튼 클릭 처리
+  const handlePaymentClick = () => {
+    if (paymentMethod === 'paypal') {
+      // PayPal 결제인 경우 숨겨진 PayPal 버튼 클릭
+      const paypalButton = document.querySelector('.paypal-button-container .paypal-button')
+      if (paypalButton) {
+        paypalButton.click()
+      }
+    } else {
+      // 카드 결제인 경우 바로 주문 처리
+      handleOrder()
+    }
+  }
+
   return (
     <div className="bg-chop-cream min-h-screen flex flex-col">
       <Header title="Checkout" showBackButton={true} />
@@ -143,6 +184,44 @@ export default function Checkout() {
               <span className="text-chop-orange">₩{total.toLocaleString()}</span>
             </div>
           </div>
+        </div>
+
+        {/* Delivery Address */}
+        <div className="bg-white rounded-lg p-4 mb-4">
+          <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
+            Delivery Address
+          </h2>
+          {accommodation && (
+            <div className="mb-2 p-2 bg-chop-cream rounded-lg">
+              <p className="text-sm text-chop-brown">
+                <strong>{accommodation.name}</strong> - Address auto-filled from QR scan
+              </p>
+            </div>
+          )}
+          <textarea
+            value={deliveryAddress}
+            onChange={(e) => accommodation ? null : setDeliveryAddress(e.target.value)}
+            placeholder={accommodation ? "Address auto-filled from accommodation" : "Enter your delivery address..."}
+            className={`w-full p-3 border border-chop-border rounded-lg text-chop-brown ${
+              accommodation ? 'bg-gray-100 cursor-not-allowed' : ''
+            }`}
+            rows={3}
+            disabled={!!accommodation}
+          />
+        </div>
+
+        {/* Special Instructions */}
+        <div className="bg-white rounded-lg p-4 mb-4">
+          <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
+            Special Instructions
+          </h2>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Any special instructions for your order..."
+            className="w-full p-3 border border-chop-border rounded-lg text-chop-brown"
+            rows={3}
+          />
         </div>
 
         {/* Payment Method */}
@@ -207,44 +286,6 @@ export default function Checkout() {
               </PayPalProvider>
             </div>
           )}
-        </div>
-
-        {/* Delivery Address */}
-        <div className="bg-white rounded-lg p-4 mb-4">
-          <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
-            Delivery Address
-          </h2>
-          {accommodation && (
-            <div className="mb-2 p-2 bg-chop-cream rounded-lg">
-              <p className="text-sm text-chop-brown">
-                <strong>{accommodation.name}</strong> - Address auto-filled from QR scan
-              </p>
-            </div>
-          )}
-          <textarea
-            value={deliveryAddress}
-            onChange={(e) => accommodation ? null : setDeliveryAddress(e.target.value)}
-            placeholder={accommodation ? "Address auto-filled from accommodation" : "Enter your delivery address..."}
-            className={`w-full p-3 border border-chop-border rounded-lg text-chop-brown ${
-              accommodation ? 'bg-gray-100 cursor-not-allowed' : ''
-            }`}
-            rows={3}
-            disabled={!!accommodation}
-          />
-        </div>
-
-        {/* Special Instructions */}
-        <div className="bg-white rounded-lg p-4 mb-4">
-          <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
-            Special Instructions
-          </h2>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Any special instructions for your order..."
-            className="w-full p-3 border border-chop-border rounded-lg text-chop-brown"
-            rows={3}
-          />
         </div>
       </div>
 
