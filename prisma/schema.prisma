@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Accommodation {
@@ -36,7 +37,7 @@ model Restaurant {
   nameEn       String   @map("name_en")
   nameJp       String   @map("name_jp")
   nameCn       String   @map("name_cn")
-  areas        String   // JSON string for SQLite compatibility
+  areas        Area[]
   category     Category
   image        String
   minOrderAmount Int      @default(10000) @map("min_order_amount")
@@ -106,13 +107,10 @@ model Order {
   status               OrderStatus @default(PENDING)
   paymentMethod        String   @map("payment_method")
   paymentStatus        PaymentStatus @default(PENDING) @map("payment_status")
-  notes                String?
-  
-  // PayPal 결제 관련 필드
   paypalOrderId        String?  @map("paypal_order_id")
   paypalCaptureId      String?  @map("paypal_capture_id")
   paymentDetails       Json?    @map("payment_details") // PayPal 결제 상세 정보
-  
+  notes                String?
   createdAt            DateTime @default(now()) @map("created_at")
   updatedAt            DateTime @updatedAt @map("updated_at")
 
