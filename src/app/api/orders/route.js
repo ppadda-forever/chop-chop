@@ -4,7 +4,7 @@ import { prisma } from '../../../lib/prisma'
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { items, paymentMethod, notes, total, deliveryFee, accommodationId } = body
+    const { items, paymentMethod, notes, total, deliveryFee, accommodationId, paymentDetails } = body
 
     // accommodationId 유효성 확인 및 조회
     let resolvedAccommodationId = accommodationId
@@ -28,6 +28,20 @@ export async function POST(request) {
       }
     }
 
+    // PayPal 결제 정보 처리
+    let paymentStatus = 'PENDING'
+    let paypalOrderId = null
+    let paypalCaptureId = null
+
+    if (paymentMethod === 'paypal' && paymentDetails) {
+      // PayPal 결제 성공 시 상태 업데이트
+      if (paymentDetails.success && paymentDetails.status === 'COMPLETED') {
+        paymentStatus = 'COMPLETED'
+        paypalOrderId = paymentDetails.orderID
+        paypalCaptureId = paymentDetails.captureID
+      }
+    }
+
     // 주문 생성
     const order = await prisma.order.create({
       data: {
@@ -35,7 +49,11 @@ export async function POST(request) {
         totalAmount: total - deliveryFee, // 배달비 제외한 실제 주문 금액
         deliveryFee: deliveryFee,
         paymentMethod,
+        paymentStatus,
         notes,
+        paypalOrderId,
+        paypalCaptureId,
+        paymentDetails: paymentDetails || null,
         orderItems: {
           create: items.map((item) => ({
             menuItemId: item.id,
@@ -67,6 +85,8 @@ export async function POST(request) {
         accommodation: true
       }
     })
+
+    console.log('Order created:', order.id, 'Payment status:', paymentStatus)
 
     return NextResponse.json(order, { status: 201 })
   } catch (error) {

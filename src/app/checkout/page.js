@@ -6,6 +6,8 @@ import { useCart } from '../../contexts/CartContext'
 import Header from '../../components/Header'
 import BottomNavigation from '../../components/BottomNavigation'
 import { analytics } from '../../utils/analytics'
+import PayPalProvider from '../../components/PayPalProvider'
+import PayPalButton from '../../components/PayPalButton'
 
 export default function Checkout() {
   const router = useRouter()
@@ -34,7 +36,7 @@ export default function Checkout() {
     analytics.trackCheckoutViewOncePerSessionPerAccommodation()
   }, [])
 
-  const handleOrder = async () => {
+  const handleOrder = async (paymentDetails = null) => {
     // 최소 주문 금액 체크
     const minOrderCheck = checkMinOrderAmount();
     if (!minOrderCheck.isValid) {
@@ -58,6 +60,7 @@ export default function Checkout() {
           total,
           deliveryFee,
           accommodationId: accommodation?.id || null,
+          paymentDetails, // PayPal 결제 상세 정보
         }),
       });
 
@@ -78,6 +81,24 @@ export default function Checkout() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  // PayPal 결제 성공 처리
+  const handlePayPalSuccess = async (details, data) => {
+    console.log('PayPal payment successful:', details)
+    await handleOrder(details)
+  }
+
+  // PayPal 결제 오류 처리
+  const handlePayPalError = (error) => {
+    console.error('PayPal payment error:', error)
+    alert('PayPal 결제 중 오류가 발생했습니다. 다시 시도해주세요.')
+  }
+
+  // PayPal 결제 취소 처리
+  const handlePayPalCancel = (data) => {
+    console.log('PayPal payment cancelled:', data)
+    alert('PayPal 결제가 취소되었습니다.')
   }
 
   return (
@@ -145,6 +166,17 @@ export default function Checkout() {
               <input
                 type="radio"
                 name="payment"
+                value="paypal"
+                checked={paymentMethod === 'paypal'}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                className="mr-3"
+              />
+              <span className="text-chop-brown">PayPal</span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="payment"
                 value="cash"
                 checked={paymentMethod === 'cash'}
                 onChange={(e) => setPaymentMethod(e.target.value)}
@@ -153,6 +185,28 @@ export default function Checkout() {
               <span className="text-chop-brown">Cash on Delivery</span>
             </label>
           </div>
+
+          {/* PayPal 결제 버튼 */}
+          {paymentMethod === 'paypal' && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+              <h3 className="text-sm font-medium text-chop-brown mb-3">
+                PayPal로 결제하기
+              </h3>
+              <div className="mb-2 text-xs text-gray-600">
+                결제 금액: ₩{total.toLocaleString()} (약 ${(total / 1300).toFixed(2)} USD)
+              </div>
+              <PayPalProvider>
+                <PayPalButton
+                  amount={(total / 1300).toFixed(2)}
+                  currency="USD"
+                  onSuccess={handlePayPalSuccess}
+                  onError={handlePayPalError}
+                  onCancel={handlePayPalCancel}
+                  disabled={!minOrderCheck.isValid || items.length === 0}
+                />
+              </PayPalProvider>
+            </div>
+          )}
         </div>
 
         {/* Delivery Address */}
@@ -211,15 +265,17 @@ export default function Checkout() {
       )}
 
       {/* Place Order Button */}
-      <div className="px-4 py-3 bg-chop-cream border-t border-chop-border">
-        <button 
-          onClick={handleOrder}
-          disabled={isLoading || items.length === 0 || !minOrderCheck.isValid}
-          className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors disabled:bg-gray-400"
-        >
-          {isLoading ? 'Placing Order...' : `Place Order (₩${total.toLocaleString()})`}
-        </button>
-      </div>
+      {paymentMethod !== 'paypal' && (
+        <div className="px-4 py-3 bg-chop-cream border-t border-chop-border">
+          <button 
+            onClick={() => handleOrder()}
+            disabled={isLoading || items.length === 0 || !minOrderCheck.isValid}
+            className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors disabled:bg-gray-400"
+          >
+            {isLoading ? 'Placing Order...' : `Place Order (₩${total.toLocaleString()})`}
+          </button>
+        </div>
+      )}
 
       <BottomNavigation />
     </div>
