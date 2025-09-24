@@ -25,7 +25,8 @@
     "prisma": "^6.16.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^6.20.1"
+    "react-router-dom": "^6.20.1",
+    "reusify": "^1.1.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.37",

@@ -14,6 +14,7 @@ A modern food delivery web application built with Next.js and Prisma, featuring 
 - **QR Code Integration**: Accommodation selection via QR code scanning
 - **Time-based Order Filtering**: Smart order history based on accommodation and time windows
 - **Database Integration**: Full Prisma + Supabase integration
+- **Order Notifications**: Discord webhook integration for instant order alerts
 - **Responsive Design**: Mobile-first design optimized for food delivery
 - **Modern UI**: Clean, Korean-inspired design with warm colors
 
@@ -71,6 +72,20 @@ npm run dev
 ```
 
 6. Open your browser and navigate to `http://localhost:3000`
+
+### Optional: Set up Order Notifications
+
+To receive instant Discord notifications when orders are placed:
+
+1. Create a Discord webhook (see `NOTIFICATION_SETUP.md` for detailed instructions)
+2. Add to your `.env.local` file:
+   ```env
+   DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN
+   ```
+3. Test the notification:
+   ```bash
+   curl -X POST http://localhost:3000/api/test-notification
+   ```
 
 ### Available Scripts
 

@@ -12,7 +12,7 @@ export const paypalOptions = {
   "client-id": paypalConfig.clientId,
   currency: paypalConfig.currency,
   intent: "capture",
-  "disable-funding": "credit,card", // 신용카드 옵션 비활성화 (PayPal만 사용)
+  // "disable-funding": "credit,card", // 신용카드와 카드 결제 허용
   locale: "ko_KR",
 }
 

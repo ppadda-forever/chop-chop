@@ -1,6 +1,6 @@
 'use client'
 
-import React, { Suspense } from 'react'
+import React, { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Header from '../../components/Header'
 import BottomNavigation from '../../components/BottomNavigation'
@@ -9,6 +9,80 @@ function CheckoutConfirmationContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
+  const token = searchParams.get('token')
+  const payerId = searchParams.get('PayerID')
+  
+  const [orderCreated, setOrderCreated] = useState(false)
+  const [orderData, setOrderData] = useState(null)
+
+  useEffect(() => {
+    // PayPal 결제 완료 후 주문 생성
+    const createOrderFromPayPal = async () => {
+      // PayPal 결제 완료 확인 (token과 PayerID가 있으면 PayPal 결제 완료)
+      if (token && payerId && !orderCreated) {
+        try {
+          console.log('PayPal payment completed, creating order...', { token, payerId })
+          
+          // sessionStorage에서 주문 데이터 복원
+          const savedOrderData = sessionStorage.getItem('pendingOrder')
+          const savedAccommodation = sessionStorage.getItem('accommodation')
+          
+          if (!savedOrderData) {
+            throw new Error('주문 데이터를 찾을 수 없습니다. 다시 주문해주세요.')
+          }
+          
+          const orderData = JSON.parse(savedOrderData)
+          const accommodation = savedAccommodation ? JSON.parse(savedAccommodation) : null
+          
+          // PayPal 결제 정보 추가
+          const paymentDetails = {
+            success: true,
+            status: 'COMPLETED',
+            orderID: token,
+            captureID: payerId // PayerID를 captureID로 사용
+          }
+          
+          // 주문 생성 API 호출
+          const response = await fetch('/api/orders', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              ...orderData,
+              accommodationId: accommodation?.id || null,
+              paymentDetails
+            }),
+          })
+          
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.error || '주문 생성에 실패했습니다.')
+          }
+          
+          const createdOrder = await response.json()
+          console.log('Order created successfully:', createdOrder.id)
+          
+          setOrderData(createdOrder)
+          setOrderCreated(true)
+          
+          // 주문 생성 후 임시 데이터 정리
+          sessionStorage.removeItem('pendingOrder')
+          
+        } catch (error) {
+          console.error('Error creating order from PayPal:', error)
+          alert('주문 생성에 실패했습니다: ' + error.message)
+        }
+      } else if (orderId) {
+        // 이미 생성된 주문 ID가 있는 경우 (카드 결제 등)
+        setOrderCreated(true)
+        setOrderData({ id: orderId })
+      }
+    }
+    
+    createOrderFromPayPal()
+  }, [token, payerId, orderId, orderCreated])
+
 
   return (
     <div className="bg-chop-cream min-h-screen flex flex-col">
@@ -28,9 +102,9 @@ function CheckoutConfirmationContent() {
           <p className="text-chop-gray mb-4">
             Your order has been successfully placed and is being prepared.
           </p>
-          {orderId && (
+          {(orderData?.id || orderId) && (
             <p className="text-sm text-chop-gray">
-              Order ID: #{orderId.slice(-8)}
+              Order ID: #{(orderData?.id || orderId).slice(-8)}
             </p>
           )}
         </div>

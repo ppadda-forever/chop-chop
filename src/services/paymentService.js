@@ -3,12 +3,13 @@ import { getCachedExchangeRate } from '../lib/exchangeRateCache'
 
 /**
  * PayPal 결제 처리
+ * @param {Object} orderData - 주문 데이터
  * @param {number} total - 총 결제 금액 (KRW)
  * @param {function} setLoading - 로딩 상태 설정 함수
  * @param {function} onSuccess - 성공 콜백
  * @param {function} onError - 에러 콜백
  */
-export const processPayPalPayment = async (total, setLoading, onSuccess, onError) => {
+export const processPayPalPayment = async (orderData, total, setLoading, onSuccess, onError) => {
   try {
     setLoading(true)
     
@@ -51,6 +52,9 @@ export const processPayPalPayment = async (total, setLoading, onSuccess, onError
 
     console.log('PayPal order created successfully:', order.id)
 
+    // PayPal 결제 완료 후 주문 생성을 위해 주문 데이터를 sessionStorage에 저장
+    sessionStorage.setItem('pendingOrder', JSON.stringify(orderData))
+    
     // PayPal 결제 페이지로 리다이렉트
     const paypalUrl = `https://www.sandbox.paypal.com/checkoutnow?token=${order.id}`
     window.open(paypalUrl, '_blank', 'width=600,height=600,scrollbars=yes,resizable=yes')
@@ -126,7 +130,7 @@ export const processCardPayment = async (orderData, setLoading, onSuccess, onErr
 export const processPayment = async (paymentMethod, orderData, total, setLoading, onSuccess, onError) => {
   switch (paymentMethod) {
     case 'paypal':
-      await processPayPalPayment(total, setLoading, onSuccess, onError)
+      await processPayPalPayment(orderData, total, setLoading, onSuccess, onError)
       break
     case 'card':
     default:
