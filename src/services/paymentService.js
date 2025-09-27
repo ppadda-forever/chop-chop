@@ -59,17 +59,116 @@ export const processPayPalPayment = async (orderData, total, setLoading, onSucce
     const paypalUrl = `https://www.sandbox.paypal.com/checkoutnow?token=${order.id}`
     window.open(paypalUrl, '_blank', 'width=600,height=600,scrollbars=yes,resizable=yes')
     
-    // 성공 콜백 호출 (필요한 경우)
-    if (onSuccess) {
-      onSuccess(order)
-    }
+    // PayPal의 경우 로딩 상태를 유지하고 성공 콜백을 호출하지 않음
+    // 실제 결제 완료는 PayPal 창에서 메시지로 전달됨
+    // 로딩 상태는 PayPal 창이 닫힐 때까지 유지됨
     
   } catch (error) {
     console.error('Error processing PayPal payment:', error)
+    setLoading(false) // 에러 발생 시에만 로딩 상태 해제
     if (onError) {
       onError(error)
     } else {
       alert(`PayPal 결제 시작 실패: ${error.message}`)
+    }
+  }
+  // PayPal의 경우 finally 블록에서 setLoading(false)를 호출하지 않음
+}
+
+/**
+ * PayPal 결제 완료 후 주문 생성
+ * @param {Object} paymentResult - PayPal 결제 결과
+ * @param {function} setLoading - 로딩 상태 설정 함수
+ * @param {function} onSuccess - 성공 콜백
+ * @param {function} onError - 에러 콜백
+ */
+export const createOrderAfterPayPalPayment = async (paymentResult, setLoading, onSuccess, onError) => {
+  try {
+    setLoading(true)
+    
+    // sessionStorage에서 주문 데이터 가져오기
+    const pendingOrderData = sessionStorage.getItem('pendingOrder')
+    if (!pendingOrderData) {
+      throw new Error('주문 데이터를 찾을 수 없습니다.')
+    }
+    
+    const orderData = JSON.parse(pendingOrderData)
+    
+    // PayPal 결제 정보 추가 (paymentStatus는 제외)
+    const finalOrderData = {
+      ...orderData,
+      paymentMethod: 'paypal',
+      paypalOrderId: paymentResult.orderID,
+      paypalCaptureId: paymentResult.captureID,
+      paymentDetails: {
+        ...orderData.paymentDetails,
+        paypal: {
+          orderID: paymentResult.orderID,
+          captureID: paymentResult.captureID,
+          amount: paymentResult.amount,
+          status: paymentResult.status
+        }
+      }
+    }
+    
+    // 1. 주문 생성 (PENDING 상태)
+    const orderResponse = await fetch('/api/orders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(finalOrderData),
+    })
+
+    if (!orderResponse.ok) {
+      const errorData = await orderResponse.json()
+      throw new Error(errorData.error || 'Failed to create order')
+    }
+
+    const order = await orderResponse.json()
+    
+    // 2. PayPal 결제 완료 상태로 업데이트
+    const paymentUpdateResponse = await fetch(`/api/orders/${order.id}/payment-status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        paymentStatus: 'COMPLETED',
+        paypalOrderId: paymentResult.orderID,
+        paypalCaptureId: paymentResult.captureID,
+        paymentDetails: {
+          ...orderData.paymentDetails,
+          paypal: {
+            orderID: paymentResult.orderID,
+            captureID: paymentResult.captureID,
+            amount: paymentResult.amount,
+            status: paymentResult.status,
+            completedAt: new Date().toISOString()
+          }
+        }
+      }),
+    })
+
+    if (!paymentUpdateResponse.ok) {
+      console.error('Failed to update payment status, but order was created')
+    }
+
+    const updatedOrder = await paymentUpdateResponse.json()
+    
+    // sessionStorage 정리
+    sessionStorage.removeItem('pendingOrder')
+    
+    if (onSuccess) {
+      onSuccess(updatedOrder)
+    }
+    
+  } catch (error) {
+    console.error('Error creating order after PayPal payment:', error)
+    if (onError) {
+      onError(error)
+    } else {
+      alert(`주문 생성 실패: ${error.message}`)
     }
   } finally {
     setLoading(false)
@@ -87,7 +186,8 @@ export const processCardPayment = async (orderData, setLoading, onSuccess, onErr
   try {
     setLoading(true)
     
-    const response = await fetch('/api/orders', {
+    // 1. 주문 생성 (PENDING 상태)
+    const orderResponse = await fetch('/api/orders', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -95,15 +195,36 @@ export const processCardPayment = async (orderData, setLoading, onSuccess, onErr
       body: JSON.stringify(orderData),
     })
 
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.error || 'Failed to place order')
+    if (!orderResponse.ok) {
+      const errorData = await orderResponse.json()
+      throw new Error(errorData.error || 'Failed to create order')
     }
 
-    const order = await response.json()
+    const order = await orderResponse.json()
+    
+    // 2. 카드 결제는 성공으로 간주하고 결제 상태 업데이트
+    const paymentUpdateResponse = await fetch(`/api/orders/${order.id}/payment-status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        paymentStatus: 'COMPLETED',
+        paymentDetails: {
+          method: 'card',
+          completedAt: new Date().toISOString()
+        }
+      }),
+    })
+
+    if (!paymentUpdateResponse.ok) {
+      console.error('Failed to update payment status, but order was created')
+    }
+
+    const updatedOrder = await paymentUpdateResponse.json()
     
     if (onSuccess) {
-      onSuccess(order)
+      onSuccess(updatedOrder)
     }
     
   } catch (error) {

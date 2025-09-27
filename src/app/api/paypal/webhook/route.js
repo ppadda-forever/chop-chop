@@ -1,81 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
 import { paypalConfig } from '../../../../config/paypal'
-
-// PayPal API 기본 URL
-const PAYPAL_API_BASE = paypalConfig.apiBaseUrl
-
-// PayPal 액세스 토큰 생성
-async function generateAccessToken() {
-  try {
-    if (!paypalConfig.clientId || !paypalConfig.clientSecret) {
-      throw new Error('PayPal client credentials are missing')
-    }
-
-    const auth = Buffer.from(
-      `${paypalConfig.clientId}:${paypalConfig.clientSecret}`
-    ).toString('base64')
-
-    const response = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
-      method: 'POST',
-      body: 'grant_type=client_credentials',
-      headers: {
-        Authorization: `Basic ${auth}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to generate PayPal access token')
-    }
-
-    const data = await response.json()
-    return data.access_token
-  } catch (error) {
-    console.error('Error generating PayPal access token:', error)
-    throw error
-  }
-}
-
-// PayPal 웹훅 이벤트 검증
-async function verifyPayPalWebhook(headers, body, webhookId) {
-  try {
-    const accessToken = await generateAccessToken()
-
-    const verificationData = {
-      auth_algo: headers['paypal-auth-algo'],
-      cert_id: headers['paypal-cert-id'],
-      transmission_id: headers['paypal-transmission-id'],
-      transmission_sig: headers['paypal-transmission-sig'],
-      transmission_time: headers['paypal-transmission-time'],
-      webhook_id: webhookId,
-      webhook_event: body,
-    }
-
-    const response = await fetch(
-      `${PAYPAL_API_BASE}/v1/notifications/verify-webhook-signature`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(verificationData),
-      }
-    )
-
-    if (!response.ok) {
-      console.error('PayPal webhook verification failed:', response.status)
-      return false
-    }
-
-    const result = await response.json()
-    return result.verification_status === 'SUCCESS'
-  } catch (error) {
-    console.error('Error verifying PayPal webhook:', error)
-    return false
-  }
-}
+import { verifyPayPalWebhook } from '../../../../lib/paypal'
 
 // 결제 완료 처리
 async function handlePaymentCompleted(event) {
@@ -170,7 +96,6 @@ async function handlePaymentFailed(event) {
   }
 }
 
-// PayPal 웹훅 처리
 export async function POST(request) {
   try {
     const body = await request.json()

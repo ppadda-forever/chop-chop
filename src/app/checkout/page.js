@@ -6,7 +6,7 @@ import { useCart } from '../../contexts/CartContext'
 import Header from '../../components/Header'
 import BottomNavigation from '../../components/BottomNavigation'
 import { analytics } from '../../utils/analytics'
-import { processPayment } from '../../services/paymentService'
+import { processPayment, createOrderAfterPayPalPayment } from '../../services/paymentService'
 
 // 결제 수단별 설정
 const PAYMENT_METHODS = {
@@ -74,6 +74,50 @@ export default function Checkout() {
       fetchExchangeRate()
     }
   }, [paymentMethod, total])
+
+  // checkout 페이지의 useEffect에 추가
+  useEffect(() => {
+    // PayPal 결제 완료 메시지 리스너
+    const handlePayPalMessage = async (event) => {
+      if (event.origin !== window.location.origin) return
+      
+      switch (event.data.type) {
+        case 'PAYPAL_PAYMENT_SUCCESS':
+          try {
+            await createOrderAfterPayPalPayment(event.data, setIsLoading, (order) => {
+              // 주문 완료 추적
+              analytics.trackOrderComplete(order.id, total)
+              clearCart() // Clear cart after successful order
+              setIsLoading(false) // 로딩 상태 해제
+              router.push(`/checkout-confirmation?orderId=${order.id}`)
+            }, (error) => {
+              setIsLoading(false) // 로딩 상태 해제
+              alert(`주문 생성 실패: ${error.message}`)
+            })
+          } catch (error) {
+            console.error('Error handling PayPal success:', error)
+            setIsLoading(false) // 로딩 상태 해제
+          }
+          break
+          
+        case 'PAYPAL_PAYMENT_ERROR':
+          setIsLoading(false) // 로딩 상태 해제
+          alert(`PayPal 결제 오류: ${event.data.error}`)
+          break
+          
+        case 'PAYPAL_PAYMENT_CANCELLED':
+          setIsLoading(false) // 로딩 상태 해제
+          alert('PayPal 결제가 취소되었습니다.')
+          break
+      }
+    }
+    
+    window.addEventListener('message', handlePayPalMessage)
+    
+    return () => {
+      window.removeEventListener('message', handlePayPalMessage)
+    }
+  }, [router])
 
   const fetchExchangeRate = async () => {
     try {

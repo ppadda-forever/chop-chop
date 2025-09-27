@@ -29,19 +29,10 @@ export async function POST(request) {
       }
     }
 
-    // PayPal 결제 정보 처리
-    let paymentStatus = 'PENDING'
-    let paypalOrderId = null
-    let paypalCaptureId = null
-
-    if (paymentMethod === 'paypal' && paymentDetails) {
-      // PayPal 결제 성공 시 상태 업데이트
-      if (paymentDetails.success && paymentDetails.status === 'COMPLETED') {
-        paymentStatus = 'COMPLETED'
-        paypalOrderId = paymentDetails.orderID
-        paypalCaptureId = paymentDetails.captureID
-      }
-    }
+    // 모든 주문은 PENDING 상태로 시작 (결제 완료 후 별도로 업데이트)
+    const paymentStatus = 'PENDING'
+    const paypalOrderId = null
+    const paypalCaptureId = null
 
     // 주문 생성
     const order = await prisma.order.create({
@@ -88,32 +79,6 @@ export async function POST(request) {
     })
 
     console.log('Order created:', order.id, 'Payment status:', paymentStatus)
-
-    // 결제 완료된 주문만 디스코드 알림 전송
-    if (paymentStatus === 'COMPLETED') {
-      try {
-        const notificationConfig = {
-          discord: {
-            webhookUrl: process.env.DISCORD_WEBHOOK_URL
-          }
-        }
-
-        // 디스코드 웹훅 URL이 설정되어 있는 경우에만 알림 전송
-        if (process.env.DISCORD_WEBHOOK_URL) {
-          // 비동기로 알림 전송 (주문 생성 응답을 지연시키지 않음)
-          sendOrderNotifications(order, notificationConfig).catch(error => {
-            console.error('Failed to send Discord notification:', error)
-          })
-          console.log('Discord notification queued for completed payment order:', order.id)
-        } else {
-          console.log('Discord webhook URL not configured - skipping notification')
-        }
-      } catch (notificationError) {
-        console.error('Error setting up Discord notification:', notificationError)
-      }
-    } else {
-      console.log('Payment not completed - skipping Discord notification for order:', order.id, 'Payment status:', paymentStatus)
-    }
 
     return NextResponse.json(order, { status: 201 })
   } catch (error) {

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { Suspense, useEffect, useState } from 'react'
+import React, { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Header from '../../components/Header'
 import BottomNavigation from '../../components/BottomNavigation'
@@ -9,80 +9,194 @@ function CheckoutConfirmationContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
-  const token = searchParams.get('token')
-  const payerId = searchParams.get('PayerID')
-  
-  const [orderCreated, setOrderCreated] = useState(false)
-  const [orderData, setOrderData] = useState(null)
+  const paypalProcessing = searchParams.get('paypalProcessing') === 'true'
+  const [orderInfo, setOrderInfo] = useState(null)
+  const [paymentStatus, setPaymentStatus] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [statusCheckInterval, setStatusCheckInterval] = useState(null)
 
   useEffect(() => {
-    // PayPal 결제 완료 후 주문 생성
-    const createOrderFromPayPal = async () => {
-      // PayPal 결제 완료 확인 (token과 PayerID가 있으면 PayPal 결제 완료)
-      if (token && payerId && !orderCreated) {
+    const fetchOrderInfo = async () => {
+      if (orderId) {
         try {
-          console.log('PayPal payment completed, creating order...', { token, payerId })
-          
-          // sessionStorage에서 주문 데이터 복원
-          const savedOrderData = sessionStorage.getItem('pendingOrder')
-          const savedAccommodation = sessionStorage.getItem('accommodation')
-          
-          if (!savedOrderData) {
-            throw new Error('주문 데이터를 찾을 수 없습니다. 다시 주문해주세요.')
+          // API에서 실제 주문 정보 가져오기
+          const response = await fetch(`/api/orders/${orderId}`)
+          if (response.ok) {
+            const orderData = await response.json()
+            setOrderInfo(orderData)
+          } else {
+            console.error('Failed to fetch order info')
           }
-          
-          const orderData = JSON.parse(savedOrderData)
-          const accommodation = savedAccommodation ? JSON.parse(savedAccommodation) : null
-          
-          // PayPal 결제 정보 추가
-          const paymentDetails = {
-            success: true,
-            status: 'COMPLETED',
-            orderID: token,
-            captureID: payerId // PayerID를 captureID로 사용
-          }
-          
-          // 주문 생성 API 호출
-          const response = await fetch('/api/orders', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              ...orderData,
-              accommodationId: accommodation?.id || null,
-              paymentDetails
-            }),
-          })
-          
-          if (!response.ok) {
-            const errorData = await response.json()
-            throw new Error(errorData.error || '주문 생성에 실패했습니다.')
-          }
-          
-          const createdOrder = await response.json()
-          console.log('Order created successfully:', createdOrder.id)
-          
-          setOrderData(createdOrder)
-          setOrderCreated(true)
-          
-          // 주문 생성 후 임시 데이터 정리
-          sessionStorage.removeItem('pendingOrder')
-          
         } catch (error) {
-          console.error('Error creating order from PayPal:', error)
-          alert('주문 생성에 실패했습니다: ' + error.message)
+          console.error('Error fetching order info:', error)
         }
-      } else if (orderId) {
-        // 이미 생성된 주문 ID가 있는 경우 (카드 결제 등)
-        setOrderCreated(true)
-        setOrderData({ id: orderId })
+      } else {
+        // orderId가 없는 경우 localStorage에서 fallback
+        try {
+          const savedOrderInfo = localStorage.getItem('lastOrderInfo')
+          if (savedOrderInfo) {
+            const parsedOrderInfo = JSON.parse(savedOrderInfo)
+            setOrderInfo(parsedOrderInfo)
+          }
+        } catch (error) {
+          console.error('Error parsing order info from localStorage:', error)
+        }
+      }
+      setLoading(false)
+    }
+
+    fetchOrderInfo()
+  }, [orderId])
+
+  useEffect(() => {
+    // orderId가 있으면 결제 상태 확인
+    if (orderId) {
+      checkPaymentStatus()
+      
+      // PayPal 결제인 경우 주기적으로 상태 확인
+      const interval = setInterval(checkPaymentStatus, 3000) // 3초마다 확인
+      setStatusCheckInterval(interval)
+      
+      return () => {
+        if (interval) {
+          clearInterval(interval)
+        }
       }
     }
-    
-    createOrderFromPayPal()
-  }, [token, payerId, orderId, orderCreated])
+  }, [orderId])
 
+  const checkPaymentStatus = async () => {
+    if (!orderId) return
+    
+    try {
+      // 주문 정보를 다시 가져와서 최신 결제 상태 확인
+      const response = await fetch(`/api/orders/${orderId}`)
+      if (response.ok) {
+        const orderData = await response.json()
+        setOrderInfo(orderData)
+        setPaymentStatus({
+          status: orderData.paymentStatus,
+          isCompleted: orderData.paymentStatus === 'COMPLETED',
+          isFailed: orderData.paymentStatus === 'FAILED'
+        })
+        
+        // 결제가 완료되면 상태 확인 중단
+        if (orderData.paymentStatus === 'COMPLETED' || orderData.paymentStatus === 'FAILED') {
+          if (statusCheckInterval) {
+            clearInterval(statusCheckInterval)
+            setStatusCheckInterval(null)
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error checking payment status:', error)
+    }
+  }
+
+  const getPaymentMethodDisplay = (method) => {
+    switch (method) {
+      case 'paypal':
+        return 'PayPal'
+      case 'card':
+        return 'Credit Card'
+      default:
+        return method || 'Credit Card'
+    }
+  }
+
+  const getDeliveryTimeEstimate = () => {
+    return '35-45 minutes'
+  }
+
+  const formatPrice = (price) => {
+    return `₩${price.toLocaleString()}`
+  }
+
+  // 결제 처리 중인지 확인
+  const isPaymentProcessing = paymentStatus?.isProcessing || false
+  const isPaymentCompleted = paymentStatus?.isCompleted || false
+  const isPayPalPayment = orderInfo?.paymentMethod === 'paypal'
+
+  if (loading) {
+    return (
+      <div className="bg-chop-cream min-h-screen flex flex-col">
+        <Header title="Order Confirmed" showBackButton={false} />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-chop-brown">Loading...</div>
+        </div>
+        <BottomNavigation />
+      </div>
+    )
+  }
+
+  // PayPal 결제 중인 경우
+  if (isPayPalPayment && isPaymentProcessing && !isPaymentCompleted) {
+    return (
+      <div className="bg-chop-cream min-h-screen flex flex-col">
+        <Header title="Payment Processing" showBackButton={false} />
+        
+        <div className="flex-1 px-4 py-5">
+          {/* 결제 중 메시지 */}
+          <div className="bg-white rounded-lg p-6 text-center mb-6">
+            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-orange-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-chop-brown mb-2 font-jakarta">
+              결제 중입니다
+            </h1>
+            <p className="text-chop-gray mb-4">
+              PayPal에서 결제를 처리하고 있습니다. 잠시만 기다려주세요.
+            </p>
+            <div className="text-sm text-chop-gray">
+              {paymentStatus?.statusMessage || '결제 상태를 확인하는 중...'}
+            </div>
+          </div>
+
+          {/* 로딩 인디케이터 */}
+          <div className="bg-white rounded-lg p-4 mb-6">
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce"></div>
+              <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+              <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            </div>
+          </div>
+
+          {/* 주문 정보 미리보기 */}
+          {orderInfo && (
+            <div className="bg-white rounded-lg p-4">
+              <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
+                주문 정보
+              </h2>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-chop-brown">결제 수단</span>
+                  <span className="text-chop-brown">PayPal</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-chop-brown">주문 금액</span>
+                  <span className="text-chop-brown">{formatPrice(orderInfo.totalAmount || 0)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-chop-brown">배달비</span>
+                  <span className="text-chop-brown">{formatPrice(orderInfo.deliveryFee || 0)}</span>
+                </div>
+                <div className="flex justify-between border-t pt-2">
+                  <span className="text-chop-brown font-semibold">총 금액</span>
+                  <span className="text-chop-orange font-bold">
+                    {formatPrice((orderInfo.totalAmount || 0) + (orderInfo.deliveryFee || 0))}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <BottomNavigation />
+      </div>
+    )
+  }
 
   return (
     <div className="bg-chop-cream min-h-screen flex flex-col">
@@ -102,33 +216,103 @@ function CheckoutConfirmationContent() {
           <p className="text-chop-gray mb-4">
             Your order has been successfully placed and is being prepared.
           </p>
-          {(orderData?.id || orderId) && (
+          {orderId && (
             <p className="text-sm text-chop-gray">
-              Order ID: #{(orderData?.id || orderId).slice(-8)}
+              Order ID: #{orderId.slice(-8)}
             </p>
           )}
         </div>
 
+        {/* Order Items */}
+        {orderInfo && orderInfo.orderItems && orderInfo.orderItems.length > 0 && (
+          <div className="bg-white rounded-lg p-4 mb-6">
+            <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
+              Order Items
+            </h2>
+            <div className="space-y-4">
+              {orderInfo.orderItems.map((orderItem, index) => (
+                <div key={index} className="border-b border-gray-100 pb-3 last:border-b-0">
+                  <div className="flex justify-between items-start">
+                    <div className="text-right">
+                      <div className="text-chop-brown font-semibold">
+                        {formatPrice(orderItem.unitPrice * orderItem.quantity)}
+                      </div>
+                      <div className="text-sm text-chop-gray">
+                        ₩{orderItem.unitPrice.toLocaleString()} × {orderItem.quantity}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Order Details */}
         <div className="bg-white rounded-lg p-4 mb-6">
           <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
-            Order Details
+            Order Summary
           </h2>
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-chop-brown">Estimated Delivery</span>
-              <span className="text-chop-brown">25-35 minutes</span>
+              <span className="text-chop-brown">{getDeliveryTimeEstimate()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-chop-brown">Payment Method</span>
-              <span className="text-chop-brown">Credit Card</span>
+              <span className="text-chop-brown">
+                {getPaymentMethodDisplay(orderInfo?.paymentMethod)}
+              </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-chop-brown">Total Amount</span>
-              <span className="text-chop-orange font-bold">₩18,000</span>
+              <span className="text-chop-brown">Subtotal</span>
+              <span className="text-chop-brown">
+                {orderInfo ? formatPrice(orderInfo.totalAmount) : '₩0'}
+              </span>
+            </div>
+            {orderInfo && orderInfo.deliveryFee && orderInfo.deliveryFee > 0 && (
+              <div className="flex justify-between">
+                <span className="text-chop-brown">Delivery Fee</span>
+                <span className="text-chop-brown">{formatPrice(orderInfo.deliveryFee)}</span>
+              </div>
+            )}
+            <div className="flex justify-between border-t pt-2">
+              <span className="text-chop-brown font-semibold">Total Amount</span>
+              <span className="text-chop-orange font-bold">
+                {orderInfo ? formatPrice((orderInfo.totalAmount || 0) + (orderInfo.deliveryFee || 0)) : '₩0'}
+              </span>
             </div>
           </div>
         </div>
+
+        {/* Delivery Information */}
+        {orderInfo && orderInfo.accommodation && (
+          <div className="bg-white rounded-lg p-4 mb-6">
+            <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
+              Delivery Information
+            </h2>
+            <div className="space-y-2">
+              <div>
+                <span className="text-sm text-chop-gray">Location:</span>
+                <p className="text-chop-brown font-medium">{orderInfo.accommodation.name}</p>
+              </div>
+              <div>
+                <span className="text-sm text-chop-gray">Address:</span>
+                <p className="text-chop-brown">{orderInfo.accommodation.address}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Special Notes */}
+        {orderInfo && orderInfo.notes && (
+          <div className="bg-white rounded-lg p-4 mb-6">
+            <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
+              Special Instructions
+            </h2>
+            <p className="text-chop-brown">{orderInfo.notes}</p>
+          </div>
+        )}
 
         {/* Warning Message */}
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
@@ -157,7 +341,11 @@ function CheckoutConfirmationContent() {
             View Order Status
           </button>
           <button 
-            onClick={() => router.push('/')}
+            onClick={() => {
+              // localStorage에서 주문 정보 제거 (선택사항)
+              localStorage.removeItem('lastOrderInfo')
+              router.push('/')
+            }}
             className="w-full bg-white text-chop-brown py-3 rounded-lg font-bold text-base border border-chop-border hover:bg-gray-50 transition-colors"
           >
             Continue Shopping
