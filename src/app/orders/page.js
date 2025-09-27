@@ -67,7 +67,7 @@ export default function Orders() {
     if (status === 'DELIVERED') {
       return 'Delivered successfully!'
     } else if (status === 'PENDING') {
-      return 'Expected in 25-35 minutes'
+      return 'Expected in 35-45 minutes'
     } else if (status === 'CANCELLED') {
       return 'This order was cancelled'
     }
@@ -208,7 +208,7 @@ export default function Orders() {
                             )}
                             {step.id === 'delivered' && !step.isCompleted && (
                               <p className="text-chop-orange text-sm mt-1 font-medium">
-                                Expected in 25-35 minutes
+                                Expected in 35-45 minutes
                               </p>
                             )}
                             {step.id === 'cancelled' && (
