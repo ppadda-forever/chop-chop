@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { getRestaurants, getRestaurantsByCategory } from '../../services/clientApi'
 import Header from '../../components/Header'
 import BottomNavigation from '../../components/BottomNavigation'
+import { useLanguage } from '../../contexts/LanguageContext'
+import { getTranslatedField, t } from '../../utils/translation'
 
 export default function Restaurants() {
   const router = useRouter()
@@ -12,6 +14,7 @@ export default function Restaurants() {
   const [restaurants, setRestaurants] = useState([])
   const [loading, setLoading] = useState(true)
   const [accommodation, setAccommodation] = useState(null)
+  const { currentLanguage } = useLanguage()
 
   const categories = [
     'KOREAN', 'CHICKEN', 'BUNSIK', 'PIZZA', 'ASIAN', 'BURGERS', 
@@ -54,7 +57,7 @@ export default function Restaurants() {
 
   return (
     <div className="bg-chop-cream min-h-screen flex flex-col">
-      <Header title="Restaurants" />
+      <Header title={t('restaurants', 'title', currentLanguage)} />
       
       <div className="flex-1">
         {/* Category Filters */}
@@ -80,7 +83,7 @@ export default function Restaurants() {
         <div className="px-4">
           {loading ? (
             <div className="flex justify-center items-center h-40">
-              <div className="text-chop-brown">Loading...</div>
+              <div className="text-chop-brown">{t('common', 'loading', currentLanguage)}</div>
             </div>
           ) : restaurants.length === 0 ? (
             <div className="flex justify-center items-center h-40">
@@ -100,10 +103,10 @@ export default function Restaurants() {
                 
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-chop-dark-brown text-base mb-1 font-jakarta">
-                    {restaurant.name}
+                    {getTranslatedField(restaurant, 'name', currentLanguage)}
                   </h3>
                   <p className="text-chop-red text-sm">
-                    {restaurant.category} · Minimum order: ₩{restaurant.minOrderAmount.toLocaleString()}
+                    {restaurant.category} · {t('restaurants', 'minOrder', currentLanguage)} ₩{restaurant.minOrderAmount.toLocaleString()}
                   </p>
                 </div>
               </div>

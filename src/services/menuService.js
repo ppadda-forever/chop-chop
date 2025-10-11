@@ -15,6 +15,9 @@ export async function getAllMenuItems() {
           select: {
             id: true,
             name: true,
+            nameEn: true,
+            nameJp: true,
+            nameCn: true,
             category: true
           }
         },
@@ -92,6 +95,9 @@ export async function getPopularMenuItems(limit = 6) {
           select: {
             id: true,
             name: true,
+            nameEn: true,
+            nameJp: true,
+            nameCn: true,
             category: true
           }
         },
@@ -141,6 +147,9 @@ export async function getPopularMenuItemsByArea(area, limit = 6) {
           select: {
             id: true,
             name: true,
+            nameEn: true,
+            nameJp: true,
+            nameCn: true,
             category: true
           }
         },
@@ -222,6 +231,9 @@ export async function getMenuItemsByCategory(category, limit = 10) {
           select: {
             id: true,
             name: true,
+            nameEn: true,
+            nameJp: true,
+            nameCn: true,
             category: true
           }
         },
@@ -269,6 +281,9 @@ export async function getMenuItemsByPriceRange(minPrice, maxPrice) {
           select: {
             id: true,
             name: true,
+            nameEn: true,
+            nameJp: true,
+            nameCn: true,
             category: true
           }
         },
@@ -329,6 +344,9 @@ export async function searchMenuItems(searchTerm) {
           select: {
             id: true,
             name: true,
+            nameEn: true,
+            nameJp: true,
+            nameCn: true,
             category: true
           }
         },

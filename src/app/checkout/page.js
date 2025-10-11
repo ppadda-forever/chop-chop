@@ -7,6 +7,8 @@ import Header from '../../components/Header'
 import BottomNavigation from '../../components/BottomNavigation'
 import { analytics } from '../../utils/analytics'
 import { processPayment, createOrderAfterPayPalPayment } from '../../services/paymentService'
+import { useLanguage } from '../../contexts/LanguageContext'
+import { getTranslatedField, t } from '../../utils/translation'
 
 // 결제 수단별 설정
 const PAYMENT_METHODS = {
@@ -40,6 +42,7 @@ const PAYMENT_METHODS = {
 
 export default function Checkout() {
   const router = useRouter()
+  const { currentLanguage } = useLanguage()
   const { items, getTotalPrice, getCartItemsByRestaurant, clearCart, checkMinOrderAmount } = useCart()
   const [paymentMethod, setPaymentMethod] = useState('card')
   const [deliveryAddress, setDeliveryAddress] = useState('')
@@ -194,13 +197,13 @@ export default function Checkout() {
 
   return (
     <div className="bg-chop-cream min-h-screen flex flex-col">
-      <Header title="Checkout" showBackButton={true} />
+      <Header title={t('checkout', 'title', currentLanguage)} showBackButton={true} />
       
       <div className="flex-1 px-4 py-5">
         {/* Order Summary */}
         <div className="bg-white rounded-lg p-4 mb-4">
           <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
-            Order Summary
+            {t('checkout', 'orderSummary', currentLanguage)}
           </h2>
           
           {/* Cart Items */}
@@ -208,11 +211,11 @@ export default function Checkout() {
             {cartGroups.map((group) => (
               <div key={group.restaurant.id}>
                 <h3 className="font-medium text-chop-brown text-sm mb-2">
-                  {group.restaurant.name}
+                  {getTranslatedField(group.restaurant, 'name', currentLanguage)}
                 </h3>
                 {group.items.map((item) => (
                   <div key={item.cartId} className="flex justify-between text-sm text-chop-gray ml-2">
-                    <span>{item.name} x{item.quantity}</span>
+                    <span>{item.nameEn || item.nameJp || item.nameCn || item.name} x{item.quantity}</span>
                     <span>₩{(item.totalPrice * item.quantity).toLocaleString()}</span>
                   </div>
                 ))}
@@ -222,15 +225,15 @@ export default function Checkout() {
           
           <div className="space-y-2 border-t pt-3">
             <div className="flex justify-between">
-              <span className="text-chop-brown">Subtotal</span>
+              <span className="text-chop-brown">{t('cart', 'subtotal', currentLanguage)}</span>
               <span className="text-chop-brown">₩{subtotal.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-chop-brown">Delivery Fee</span>
+              <span className="text-chop-brown">{t('cart', 'deliveryFee', currentLanguage)}</span>
               <span className="text-chop-brown">₩{deliveryFee.toLocaleString()}</span>
             </div>
             <div className="flex justify-between font-bold text-lg border-t pt-2">
-              <span className="text-chop-brown">Total</span>
+              <span className="text-chop-brown">{t('cart', 'total', currentLanguage)}</span>
               <span className="text-chop-orange">₩{total.toLocaleString()}</span>
             </div>
           </div>
@@ -239,7 +242,7 @@ export default function Checkout() {
         {/* Delivery Address */}
         <div className="bg-white rounded-lg p-4 mb-4">
           <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
-            Delivery Address
+            {t('checkout', 'deliveryInfo', currentLanguage)}
           </h2>
           {accommodation && (
             <div className="mb-2 p-2 bg-chop-cream rounded-lg">
@@ -263,7 +266,7 @@ export default function Checkout() {
         {/* Special Instructions */}
         <div className="bg-white rounded-lg p-4 mb-4">
           <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
-            Special Instructions
+            {t('checkout', 'specialInstructions', currentLanguage)}
           </h2>
           <textarea
             value={notes}
@@ -277,7 +280,7 @@ export default function Checkout() {
         {/* Payment Method */}
         <div className="bg-white rounded-lg p-4 mb-4">
           <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
-            Payment Method
+            {t('checkout', 'paymentMethod', currentLanguage)}
           </h2>
           <div className="space-y-3">
             {Object.values(PAYMENT_METHODS).map((method) => {
@@ -357,8 +360,8 @@ export default function Checkout() {
           }
           className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors disabled:bg-gray-400"
         >
-          {isLoading ? 'Processing...' : 
-           `Pay with ${PAYMENT_METHODS[paymentMethod]?.name} (₩${total.toLocaleString()})`}
+          {isLoading ? t('common', 'loading', currentLanguage) : 
+           `${t('checkout', 'placeOrder', currentLanguage)} (₩${total.toLocaleString()})`}
         </button>
       </div>
 

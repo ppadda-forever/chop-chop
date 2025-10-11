@@ -6,6 +6,8 @@ import { getRestaurantById } from '../../../services/clientApi'
 import { useCart } from '../../../contexts/CartContext'
 import Header from '../../../components/Header'
 import BottomNavigation from '../../../components/BottomNavigation'
+import { useLanguage } from '../../../contexts/LanguageContext'
+import { getTranslatedField, t } from '../../../utils/translation'
 
 export default function RestaurantMenu() {
   const { id } = useParams()
@@ -13,6 +15,7 @@ export default function RestaurantMenu() {
   const { addToCart, getTotalPrice } = useCart()
   const [restaurant, setRestaurant] = useState(null)
   const [loading, setLoading] = useState(true)
+  const { currentLanguage } = useLanguage()
   
   useEffect(() => {
     const fetchRestaurant = async () => {
@@ -39,7 +42,7 @@ export default function RestaurantMenu() {
   if (loading) {
     return (
       <div className="bg-chop-cream min-h-screen flex items-center justify-center">
-        <p className="text-chop-brown">Loading...</p>
+        <p className="text-chop-brown">{t('common', 'loading', currentLanguage)}</p>
       </div>
     )
   }
@@ -54,7 +57,7 @@ export default function RestaurantMenu() {
 
   return (
     <div className="bg-chop-cream min-h-screen flex flex-col">
-      <Header title={restaurant.name} showBackButton={true} />
+      <Header title={getTranslatedField(restaurant, 'name', currentLanguage)} showBackButton={true} />
       
       <div className="flex-1">
         {/* Restaurant Hero Image */}
@@ -66,7 +69,7 @@ export default function RestaurantMenu() {
         {/* Menu Section */}
         <div className="px-4 py-5">
           <h2 className="text-xl font-bold text-chop-brown mb-4 font-jakarta">
-            Menu
+            {t('restaurant', 'menu', currentLanguage)}
           </h2>
           
           <div className="space-y-0">
@@ -83,10 +86,10 @@ export default function RestaurantMenu() {
                   
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-chop-brown text-base mb-1 font-jakarta">
-                      {item.name} (₩{item.basePrice.toLocaleString()})
+                      {getTranslatedField(item, 'name', currentLanguage)} (₩{item.basePrice.toLocaleString()})
                     </h3>
                     <p className="text-chop-light-brown text-sm">
-                      {item.description}
+                      {getTranslatedField(item, 'description', currentLanguage)}
                     </p>
                   </div>
                 </div>
@@ -112,7 +115,7 @@ export default function RestaurantMenu() {
             onClick={() => router.push('/cart')}
             className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors"
           >
-            View Cart (₩{getTotalPrice().toLocaleString()})
+            {t('common', 'cart', currentLanguage)} (₩{getTotalPrice().toLocaleString()})
           </button>
         </div>
       )}

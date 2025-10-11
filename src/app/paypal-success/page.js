@@ -1,10 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 
-export default function PayPalSuccess() {
-  const router = useRouter()
+function PayPalSuccessContent() {
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -101,5 +100,20 @@ export default function PayPalSuccess() {
         <p className="text-sm text-gray-500">이 창이 자동으로 닫힙니다...</p>
       </div>
     </div>
+  )
+}
+
+export default function PayPalSuccess() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">로딩 중...</p>
+        </div>
+      </div>
+    }>
+      <PayPalSuccessContent />
+    </Suspense>
   )
 }

@@ -6,6 +6,8 @@ import { getMenuItemById } from '../../../services/clientApi'
 import { useCart } from '../../../contexts/CartContext'
 import Header from '../../../components/Header'
 import BottomNavigation from '../../../components/BottomNavigation'
+import { useLanguage } from '../../../contexts/LanguageContext'
+import { getTranslatedField, t } from '../../../utils/translation'
 
 export default function MenuOption() {
   const { id } = useParams()
@@ -16,6 +18,7 @@ export default function MenuOption() {
   const [selectedOptions, setSelectedOptions] = useState({})
   const [quantity, setQuantity] = useState(1)
   const [showRestaurantWarning, setShowRestaurantWarning] = useState(false)
+  const { currentLanguage } = useLanguage()
 
   useEffect(() => {
     const fetchMenuItem = async () => {
@@ -50,7 +53,7 @@ export default function MenuOption() {
   if (loading) {
     return (
       <div className="bg-chop-cream min-h-screen flex items-center justify-center">
-        <p className="text-chop-brown">Loading...</p>
+        <p className="text-chop-brown">{t('common', 'loading', currentLanguage)}</p>
       </div>
     )
   }
@@ -131,7 +134,7 @@ export default function MenuOption() {
 
   return (
     <div className="bg-chop-cream min-h-screen flex flex-col">
-      <Header title={menuItem.restaurant.name} showBackButton={true} />
+      <Header title={getTranslatedField(menuItem.restaurant, 'name', currentLanguage)} showBackButton={true} />
       
       <div className="flex-1">
         {/* Menu Item Hero Image */}
@@ -143,10 +146,10 @@ export default function MenuOption() {
         {/* Menu Item Title */}
         <div className="px-4 py-5">
           <h1 className="text-xl font-bold text-chop-brown mb-2 font-jakarta">
-            {menuItem.name}
+            {getTranslatedField(menuItem, 'name', currentLanguage)}
           </h1>
           <p className="text-chop-brown text-base">
-            {menuItem.description}
+            {getTranslatedField(menuItem, 'description', currentLanguage)}
           </p>
         </div>
 
@@ -171,7 +174,7 @@ export default function MenuOption() {
                       {optionsOfType.map((option) => (
                         <div key={option.id} className="flex items-center justify-between py-3">
                           <div className="flex-1">
-                            <span className="text-chop-brown text-base">{option.name}</span>
+                            <span className="text-chop-brown text-base">{getTranslatedField(option, 'name', currentLanguage)}</span>
                             {option.price > 0 && (
                               <span className="text-chop-orange text-sm ml-2">
                                 +₩{option.price.toLocaleString()}
@@ -208,7 +211,7 @@ export default function MenuOption() {
                               : 'border-chop-border bg-white text-chop-brown'
                           }`}
                         >
-                          {option.name}
+                          {getTranslatedField(option, 'name', currentLanguage)}
                           {option.price > 0 && (
                             <span className="ml-1">+₩{option.price.toLocaleString()}</span>
                           )}
@@ -226,7 +229,7 @@ export default function MenuOption() {
         <div className="px-4 py-4">
           <div className="mb-6">
             <h2 className="text-lg font-bold text-chop-brown mb-4 font-jakarta">
-              Quantity
+              {t('menuItem', 'quantity', currentLanguage)}
             </h2>
           <div className="bg-chop-cream h-14 flex items-center justify-between px-4">
             <span></span>
@@ -288,7 +291,7 @@ export default function MenuOption() {
           onClick={handleAddToCart}
           className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors"
         >
-          Add to Cart (₩{calculatePrice().toLocaleString()})
+          {t('menuItem', 'addToCart', currentLanguage)} (₩{calculatePrice().toLocaleString()})
         </button>
       </div>
 

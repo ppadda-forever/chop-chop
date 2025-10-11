@@ -6,6 +6,8 @@ import { getPopularMenuItems, getAccommodationByQrCode } from '../services/clien
 import Header from '../components/Header'
 import BottomNavigation from '../components/BottomNavigation'
 import { analytics, initializeSession } from '../utils/analytics'
+import { useLanguage } from '../contexts/LanguageContext'
+import { getTranslatedField, t } from '../utils/translation'
 
 function HomeContent() {
   const router = useRouter()
@@ -13,17 +15,11 @@ function HomeContent() {
   const [popularItems, setPopularItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false)
-  const [selectedLanguage, setSelectedLanguage] = useState('English')
   const [accommodation, setAccommodation] = useState(null)
-
-  const languages = [
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'ja', name: 'Japanese', flag: '🇯🇵' },
-    { code: 'zh', name: 'Chinese', flag: '🇨🇳' }
-  ]
+  const { currentLanguage, changeLanguage, languages, getCurrentLanguage } = useLanguage()
 
   const handleLanguageSelect = (language) => {
-    setSelectedLanguage(language.name)
+    changeLanguage(language.code)
     setIsLanguageDropdownOpen(false)
   }
 
@@ -115,14 +111,14 @@ function HomeContent() {
                     key={language.code}
                     onClick={() => handleLanguageSelect(language)}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                      selectedLanguage === language.name ? 'bg-chop-cream' : ''
+                      currentLanguage === language.code ? 'bg-chop-cream' : ''
                     }`}
                   >
                     <span className="text-lg">{language.flag}</span>
                     <span className="text-sm font-medium text-chop-brown">
                       {language.name}
                     </span>
-                    {selectedLanguage === language.name && (
+                    {currentLanguage === language.code && (
                       <svg className="w-4 h-4 text-chop-orange ml-auto" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
@@ -146,7 +142,7 @@ function HomeContent() {
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-chop-dark-brown">
-                Delivering to: {accommodation.name}
+                {t('home', 'deliveringTo', currentLanguage)} {getTranslatedField(accommodation, 'name', currentLanguage)}
               </p>
               <p className="text-xs text-chop-brown">
                 {accommodation.address}
@@ -166,17 +162,17 @@ function HomeContent() {
           <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-black/50" />
           
           <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center">
-            <h1 className="text-4xl font-extrabold text-white mb-2 font-jakarta">
-              Welcome to<br />Chop Chop
+            <h1 className="text-4xl font-extrabold text-white mb-2 font-jakarta whitespace-pre-line">
+              {t('home', 'welcome', currentLanguage)}
             </h1>
             <p className="text-white text-sm mb-8 max-w-sm">
-              Your go-to for delicious food delivery in Seoul. Explore local flavors and enjoy a taste of Korea, delivered right to your door.
+              {t('home', 'heroDescription', currentLanguage)}
             </p>
             <button 
               onClick={() => router.push('/restaurants')}
               className="bg-chop-orange text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-orange-600 transition-colors"
             >
-              Order Now
+              {t('common', 'orderNow', currentLanguage)}
             </button>
           </div>
         </div>
@@ -184,12 +180,12 @@ function HomeContent() {
         {/* Recommended Dishes Section */}
         <div className="px-4 py-5">
           <h2 className="text-xl font-bold text-chop-brown mb-4 font-jakarta">
-            Recommended Dishes
+            {t('home', 'recommendedDishes', currentLanguage)}
           </h2>
           
           {loading ? (
             <div className="flex justify-center items-center h-40">
-              <div className="text-chop-brown">Loading...</div>
+              <div className="text-chop-brown">{t('common', 'loading', currentLanguage)}</div>
             </div>
           ) : (
             <div className="flex gap-3 overflow-x-auto pb-4">
@@ -206,16 +202,16 @@ function HomeContent() {
                     />
                     <div className="p-3">
                       <h3 className="font-medium text-chop-brown text-sm mb-1 font-jakarta">
-                        {item.name}
+                        {getTranslatedField(item, 'name', currentLanguage)}
                       </h3>
                       <p className="text-chop-gray text-xs mb-2 line-clamp-2">
-                        {item.description}
+                        {getTranslatedField(item, 'description', currentLanguage)}
                       </p>
                       <p className="text-chop-orange font-bold text-sm mb-1">
                         ₩{item.basePrice.toLocaleString()}
                       </p>
                       <p className="text-chop-gray text-xs">
-                        from {item.restaurant.name}
+                        {t('home', 'from', currentLanguage)} {getTranslatedField(item.restaurant, 'name', currentLanguage)}
                       </p>
                     </div>
                   </div>
