@@ -1,10 +1,14 @@
 'use client'
 
 import { Suspense, useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { createOrderAfterPayPalPayment } from '../../services/paymentService'
+import { useCart } from '../../contexts/CartContext'
 
 function PayPalSuccessContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const { clearCart } = useCart()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -34,38 +38,36 @@ function PayPalSuccessContent() {
         const result = await response.json()
         
         if (result.success) {
-          // 결제 성공 - 원래 페이지로 돌아가서 확인 페이지로 이동
-          window.opener?.postMessage({
-            type: 'PAYPAL_PAYMENT_SUCCESS',
-            orderID: result.orderID,
-            captureID: result.captureID,
-            amount: result.amount
-          }, window.location.origin)
-          
-          // PayPal 창 닫기
-          window.close()
+          // 결제 성공 - 주문 생성
+          await createOrderAfterPayPalPayment(
+            {
+              orderID: result.orderID,
+              captureID: result.captureID,
+              amount: result.amount,
+              status: 'COMPLETED'
+            },
+            setLoading,
+            (order) => {
+              // 주문 생성 성공 - 카트 비우기 및 확인 페이지로 이동
+              clearCart()
+              router.push(`/checkout-confirmation?orderId=${order.id}`)
+            },
+            (error) => {
+              console.error('Order creation error:', error)
+              setError(error.message)
+            }
+          )
         } else {
           throw new Error('Payment was not completed successfully')
         }
       } catch (error) {
         console.error('Payment processing error:', error)
         setError(error.message)
-        
-        // 에러 메시지를 원래 페이지로 전송
-        window.opener?.postMessage({
-          type: 'PAYPAL_PAYMENT_ERROR',
-          error: error.message
-        }, window.location.origin)
-        
-        // PayPal 창 닫기
-        setTimeout(() => window.close(), 2000)
-      } finally {
-        setLoading(false)
       }
     }
 
     processPayment()
-  }, [searchParams])
+  }, [searchParams, router])
 
   if (loading) {
     return (
@@ -80,27 +82,23 @@ function PayPalSuccessContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen flex items-center justify-center bg-chop-cream">
+        <div className="text-center px-4">
           <div className="text-red-500 text-6xl mb-4">❌</div>
           <h1 className="text-2xl font-bold text-gray-800 mb-2">결제 실패</h1>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <p className="text-sm text-gray-500">이 창이 자동으로 닫힙니다...</p>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={() => router.push('/checkout')}
+            className="bg-chop-orange text-white px-6 py-3 rounded-lg font-bold hover:bg-orange-600 transition-colors"
+          >
+            다시 시도하기
+          </button>
         </div>
       </div>
     )
   }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="text-green-500 text-6xl mb-4">✅</div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">결제 성공!</h1>
-        <p className="text-gray-600 mb-4">결제가 완료되었습니다.</p>
-        <p className="text-sm text-gray-500">이 창이 자동으로 닫힙니다...</p>
-      </div>
-    </div>
-  )
+  return null // 성공 시 리다이렉트되므로 null 반환
 }
 
 export default function PayPalSuccess() {

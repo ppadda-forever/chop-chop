@@ -52,16 +52,13 @@ export const processPayPalPayment = async (orderData, total, setLoading, onSucce
 
     console.log('PayPal order created successfully:', order.id)
 
-    // PayPal 결제 완료 후 주문 생성을 위해 주문 데이터를 sessionStorage에 저장
-    sessionStorage.setItem('pendingOrder', JSON.stringify(orderData))
+    // PayPal 결제 완료 후 주문 생성을 위해 주문 데이터를 localStorage에 저장
+    localStorage.setItem('pendingOrder', JSON.stringify(orderData))
+    localStorage.setItem('paypalOrderId', order.id)
     
-    // PayPal 결제 페이지로 리다이렉트
+    // PayPal 결제 페이지로 리다이렉트 (현재 페이지에서)
     const paypalUrl = `https://www.sandbox.paypal.com/checkoutnow?token=${order.id}`
-    window.open(paypalUrl, '_blank', 'width=600,height=600,scrollbars=yes,resizable=yes')
-    
-    // PayPal의 경우 로딩 상태를 유지하고 성공 콜백을 호출하지 않음
-    // 실제 결제 완료는 PayPal 창에서 메시지로 전달됨
-    // 로딩 상태는 PayPal 창이 닫힐 때까지 유지됨
+    window.location.href = paypalUrl
     
   } catch (error) {
     console.error('Error processing PayPal payment:', error)
@@ -86,8 +83,8 @@ export const createOrderAfterPayPalPayment = async (paymentResult, setLoading, o
   try {
     setLoading(true)
     
-    // sessionStorage에서 주문 데이터 가져오기
-    const pendingOrderData = sessionStorage.getItem('pendingOrder')
+    // localStorage에서 주문 데이터 가져오기
+    const pendingOrderData = localStorage.getItem('pendingOrder')
     if (!pendingOrderData) {
       throw new Error('주문 데이터를 찾을 수 없습니다.')
     }
@@ -156,8 +153,9 @@ export const createOrderAfterPayPalPayment = async (paymentResult, setLoading, o
 
     const updatedOrder = await paymentUpdateResponse.json()
     
-    // sessionStorage 정리
-    sessionStorage.removeItem('pendingOrder')
+    // localStorage 정리
+    localStorage.removeItem('pendingOrder')
+    localStorage.removeItem('paypalOrderId')
     
     if (onSuccess) {
       onSuccess(updatedOrder)
