@@ -142,7 +142,7 @@ function HomeContent() {
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-chop-dark-brown">
-                {t('home', 'deliveringTo', currentLanguage)} {getTranslatedField(accommodation, 'name', currentLanguage)}
+                {t('home', 'deliveringTo', currentLanguage)} {currentLanguage === 'ko' ? accommodation.name : (accommodation.nameEn || accommodation.name)}
               </p>
               <p className="text-xs text-chop-brown">
                 {currentLanguage === 'ko' ? accommodation.address : (accommodation.addressEn || accommodation.address)}
