@@ -3,7 +3,7 @@ import { getAccommodationByQrCode } from '../../../../services/accommodationServ
 
 export async function GET(request, { params }) {
   try {
-    const { qrCode } = params
+    const { qrCode } = await params
     const accommodation = await getAccommodationByQrCode(qrCode)
     
     if (!accommodation) {
