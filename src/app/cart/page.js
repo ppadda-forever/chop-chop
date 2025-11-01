@@ -35,7 +35,7 @@ export default function Cart() {
             {t('cart', 'empty', currentLanguage)}
           </h2>
           <p className="text-chop-gray text-center mb-6">
-            Add some delicious Korean food to get started!
+            {t('cart', 'emptyMessage', currentLanguage)}
           </p>
           <button 
             onClick={() => router.push('/restaurants')}
@@ -54,7 +54,7 @@ export default function Cart() {
     <div className="bg-chop-cream min-h-screen flex flex-col">
       <Header title={t('cart', 'title', currentLanguage)} showBackButton={true} />
       
-      <div className="flex-1 px-4 py-5">
+      <div className="flex-1 px-4 py-5 pb-40">
         {/* Cart Items by Restaurant */}
         <div className="space-y-6">
           {cartGroups.map((group) => (
@@ -69,7 +69,7 @@ export default function Cart() {
                   }}
                   className="text-chop-gray text-sm hover:text-chop-red"
                 >
-                  Remove all
+                  {t('cart', 'removeAll', currentLanguage)}
                 </button>
               </div>
               
@@ -83,7 +83,7 @@ export default function Cart() {
                     
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-chop-brown text-sm mb-1 font-jakarta">
-                        {item.nameEn || item.nameJp || item.nameCn || item.name}
+                        {getTranslatedField(item, 'name', currentLanguage)}
                       </h3>
                       
                       {/* Selected Options */}
@@ -166,11 +166,11 @@ export default function Cart() {
         </div>
       </div>
 
-      {/* Checkout Button */}
-      <div className="px-4 py-3 bg-chop-cream border-t border-chop-border">
+      {/* Fixed Checkout Button above BottomNavigation */}
+      <div className="fixed bottom-20 left-0 right-0 px-4 py-3 bg-chop-cream border-t border-chop-border z-20">
         <button 
           onClick={() => router.push('/checkout')}
-          className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors"
+          className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors shadow-lg"
         >
           {t('cart', 'proceedToCheckout', currentLanguage)} (₩{(getTotalPrice() + 3000).toLocaleString()})
         </button>

@@ -4,10 +4,13 @@ import React, { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Header from '../../components/Header'
 import BottomNavigation from '../../components/BottomNavigation'
+import { useLanguage } from '../../contexts/LanguageContext'
+import { getTranslatedField, t } from '../../utils/translation'
 
 function CheckoutConfirmationContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { currentLanguage } = useLanguage()
   const orderId = searchParams.get('orderId')
   const paypalProcessing = searchParams.get('paypalProcessing') === 'true'
   const [orderInfo, setOrderInfo] = useState(null)
@@ -120,9 +123,9 @@ function CheckoutConfirmationContent() {
   if (loading) {
     return (
       <div className="bg-chop-cream min-h-screen flex flex-col">
-        <Header title="Order Confirmed" showBackButton={false} />
+        <Header title={t('confirmation', 'title', currentLanguage)} showBackButton={false} />
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-chop-brown">Loading...</div>
+          <div className="text-chop-brown">{t('common', 'loading', currentLanguage)}</div>
         </div>
         <BottomNavigation />
       </div>
@@ -133,7 +136,7 @@ function CheckoutConfirmationContent() {
   if (isPayPalPayment && isPaymentProcessing && !isPaymentCompleted) {
     return (
       <div className="bg-chop-cream min-h-screen flex flex-col">
-        <Header title="Payment Processing" showBackButton={false} />
+        <Header title={t('confirmation', 'paymentProcessing', currentLanguage)} showBackButton={false} />
         
         <div className="flex-1 px-4 py-5">
           {/* 결제 중 메시지 */}
@@ -144,13 +147,13 @@ function CheckoutConfirmationContent() {
               </svg>
             </div>
             <h1 className="text-2xl font-bold text-chop-brown mb-2 font-jakarta">
-              결제 중입니다
+              {t('confirmation', 'processingPayment', currentLanguage)}
             </h1>
             <p className="text-chop-gray mb-4">
-              PayPal에서 결제를 처리하고 있습니다. 잠시만 기다려주세요.
+              {t('confirmation', 'processingPaymentMessage', currentLanguage)}
             </p>
             <div className="text-sm text-chop-gray">
-              {paymentStatus?.statusMessage || '결제 상태를 확인하는 중...'}
+              {paymentStatus?.statusMessage || t('confirmation', 'checkingStatus', currentLanguage)}
             </div>
           </div>
 
@@ -167,23 +170,23 @@ function CheckoutConfirmationContent() {
           {orderInfo && (
             <div className="bg-white rounded-lg p-4">
               <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
-                주문 정보
+                {t('confirmation', 'orderInfo', currentLanguage)}
               </h2>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-chop-brown">결제 수단</span>
+                  <span className="text-chop-brown">{t('confirmation', 'paymentMethod', currentLanguage)}</span>
                   <span className="text-chop-brown">PayPal</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-chop-brown">주문 금액</span>
+                  <span className="text-chop-brown">{t('confirmation', 'orderAmount', currentLanguage)}</span>
                   <span className="text-chop-brown">{formatPrice(orderInfo.totalAmount || 0)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-chop-brown">배달비</span>
+                  <span className="text-chop-brown">{t('confirmation', 'deliveryFee', currentLanguage)}</span>
                   <span className="text-chop-brown">{formatPrice(orderInfo.deliveryFee || 0)}</span>
                 </div>
                 <div className="flex justify-between border-t pt-2">
-                  <span className="text-chop-brown font-semibold">총 금액</span>
+                  <span className="text-chop-brown font-semibold">{t('confirmation', 'totalAmount', currentLanguage)}</span>
                   <span className="text-chop-orange font-bold">
                     {formatPrice((orderInfo.totalAmount || 0) + (orderInfo.deliveryFee || 0))}
                   </span>
@@ -200,9 +203,9 @@ function CheckoutConfirmationContent() {
 
   return (
     <div className="bg-chop-cream min-h-screen flex flex-col">
-      <Header title="Order Confirmed" showBackButton={false} />
+      <Header title={t('confirmation', 'title', currentLanguage)} showBackButton={false} />
       
-      <div className="flex-1 px-4 py-5">
+      <div className="flex-1 px-4 py-5 pb-56">
         {/* Success Message */}
         <div className="bg-white rounded-lg p-6 text-center mb-6">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -211,73 +214,48 @@ function CheckoutConfirmationContent() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-chop-brown mb-2 font-jakarta">
-            Order Confirmed!
+            {t('confirmation', 'title', currentLanguage)}
           </h1>
           <p className="text-chop-gray mb-4">
-            Your order has been successfully placed and is being prepared.
+            {t('confirmation', 'success', currentLanguage)}
           </p>
           {orderId && (
             <p className="text-sm text-chop-gray">
-              Order ID: #{orderId.slice(-8)}
+              {t('confirmation', 'orderId', currentLanguage)}#{orderId.slice(-8)}
             </p>
           )}
         </div>
 
-        {/* Order Items */}
-        {orderInfo && orderInfo.orderItems && orderInfo.orderItems.length > 0 && (
-          <div className="bg-white rounded-lg p-4 mb-6">
-            <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
-              Order Items
-            </h2>
-            <div className="space-y-4">
-              {orderInfo.orderItems.map((orderItem, index) => (
-                <div key={index} className="border-b border-gray-100 pb-3 last:border-b-0">
-                  <div className="flex justify-between items-start">
-                    <div className="text-right">
-                      <div className="text-chop-brown font-semibold">
-                        {formatPrice(orderItem.unitPrice * orderItem.quantity)}
-                      </div>
-                      <div className="text-sm text-chop-gray">
-                        ₩{orderItem.unitPrice.toLocaleString()} × {orderItem.quantity}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Order Details */}
         <div className="bg-white rounded-lg p-4 mb-6">
           <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
-            Order Summary
+            {t('confirmation', 'orderSummary', currentLanguage)}
           </h2>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-chop-brown">Estimated Delivery</span>
+              <span className="text-chop-brown">{t('confirmation', 'estimatedDelivery', currentLanguage)}</span>
               <span className="text-chop-brown">{getDeliveryTimeEstimate()}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-chop-brown">Payment Method</span>
+              <span className="text-chop-brown">{t('checkout', 'paymentMethod', currentLanguage)}</span>
               <span className="text-chop-brown">
                 {getPaymentMethodDisplay(orderInfo?.paymentMethod)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-chop-brown">Subtotal</span>
+              <span className="text-chop-brown">{t('cart', 'subtotal', currentLanguage)}</span>
               <span className="text-chop-brown">
                 {orderInfo ? formatPrice(orderInfo.totalAmount) : '₩0'}
               </span>
             </div>
             {orderInfo && orderInfo.deliveryFee && orderInfo.deliveryFee > 0 && (
               <div className="flex justify-between">
-                <span className="text-chop-brown">Delivery Fee</span>
+                <span className="text-chop-brown">{t('cart', 'deliveryFee', currentLanguage)}</span>
                 <span className="text-chop-brown">{formatPrice(orderInfo.deliveryFee)}</span>
               </div>
             )}
             <div className="flex justify-between border-t pt-2">
-              <span className="text-chop-brown font-semibold">Total Amount</span>
+              <span className="text-chop-brown font-semibold">{t('cart', 'total', currentLanguage)}</span>
               <span className="text-chop-orange font-bold">
                 {orderInfo ? formatPrice((orderInfo.totalAmount || 0) + (orderInfo.deliveryFee || 0)) : '₩0'}
               </span>
@@ -289,16 +267,20 @@ function CheckoutConfirmationContent() {
         {orderInfo && orderInfo.accommodation && (
           <div className="bg-white rounded-lg p-4 mb-6">
             <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
-              Delivery Information
+              {t('checkout', 'deliveryInfo', currentLanguage)}
             </h2>
             <div className="space-y-2">
               <div>
-                <span className="text-sm text-chop-gray">Location:</span>
-                <p className="text-chop-brown font-medium">{orderInfo.accommodation.name}</p>
+                <span className="text-sm text-chop-gray">{t('checkout', 'location', currentLanguage)}:</span>
+                <p className="text-chop-brown font-medium">
+                  {currentLanguage === 'ko' 
+                    ? orderInfo.accommodation.name 
+                    : (orderInfo.accommodation.nameEn || orderInfo.accommodation.name)}
+                </p>
               </div>
               <div>
-                <span className="text-sm text-chop-gray">Address:</span>
-                <p className="text-chop-brown">{orderInfo.accommodation.address}</p>
+                <span className="text-sm text-chop-gray">{t('checkout', 'address', currentLanguage)}:</span>
+                <p className="text-chop-brown">{currentLanguage === 'ko' ? orderInfo.accommodation.address : (orderInfo.accommodation.addressEn || orderInfo.accommodation.address)}</p>
               </div>
             </div>
           </div>
@@ -308,7 +290,7 @@ function CheckoutConfirmationContent() {
         {orderInfo && orderInfo.notes && (
           <div className="bg-white rounded-lg p-4 mb-6">
             <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
-              Special Instructions
+              {t('checkout', 'specialInstructions', currentLanguage)}
             </h2>
             <p className="text-chop-brown">{orderInfo.notes}</p>
           </div>
@@ -322,23 +304,24 @@ function CheckoutConfirmationContent() {
             </svg>
             <div>
               <h3 className="text-sm font-medium text-yellow-800 mb-1">
-                Important Notice
+                {t('confirmation', 'importantNotice', currentLanguage)}
               </h3>
               <p className="text-sm text-yellow-700">
-                Please ensure someone is available to receive the order at the delivery address. 
-                The delivery person will contact you when they arrive.
+                {t('confirmation', 'importantNoticeMessage', currentLanguage)}
               </p>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Action Buttons */}
+      {/* Fixed Action Buttons above BottomNavigation */}
+      <div className="fixed bottom-20 left-0 right-0 px-4 py-3 bg-chop-cream border-t border-chop-border z-20">
         <div className="space-y-3">
           <button 
             onClick={() => router.push('/orders')}
-            className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors"
+            className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors shadow-lg"
           >
-            View Order Status
+            {t('confirmation', 'viewOrderStatus', currentLanguage)}
           </button>
           <button 
             onClick={() => {
@@ -348,7 +331,7 @@ function CheckoutConfirmationContent() {
             }}
             className="w-full bg-white text-chop-brown py-3 rounded-lg font-bold text-base border border-chop-border hover:bg-gray-50 transition-colors"
           >
-            Continue Shopping
+            {t('confirmation', 'continueShopping', currentLanguage)}
           </button>
         </div>
       </div>
@@ -359,12 +342,13 @@ function CheckoutConfirmationContent() {
 }
 
 export default function CheckoutConfirmation() {
+  const { currentLanguage } = useLanguage()
   return (
     <Suspense fallback={
       <div className="bg-chop-cream min-h-screen flex flex-col">
-        <Header title="Order Confirmed" showBackButton={false} />
+        <Header title={t('confirmation', 'title', currentLanguage)} showBackButton={false} />
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-chop-brown">Loading...</div>
+          <div className="text-chop-brown">{t('common', 'loading', currentLanguage)}</div>
         </div>
         <BottomNavigation />
       </div>

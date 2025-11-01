@@ -36,6 +36,7 @@ async function main() {
         name: '강남 호텔',
         nameEn: 'Gangnam Hotel',
         address: '서울시 강남구 테헤란로 123',
+        addressEn: '123 Teheran-ro, Gangnam-gu, Seoul',
         area: 'GANGNAM',
         hostName: '김호텔',
         hostPhone: '02-1234-5678',
@@ -49,6 +50,7 @@ async function main() {
         name: '명동 게스트하우스',
         nameEn: 'Myeongdong Guesthouse',
         address: '서울시 중구 명동길 456',
+        addressEn: '456 Myeongdong-gil, Jung-gu, Seoul',
         area: 'MYEONGDONG',
         hostName: '박게스트',
         hostPhone: '02-2345-6789',
@@ -62,6 +64,7 @@ async function main() {
         name: '홍대 호스텔',
         nameEn: 'Hongdae Hostel',
         address: '서울시 마포구 홍익로 789',
+        addressEn: '789 Hongik-ro, Mapo-gu, Seoul',
         area: 'HONGDAE',
         hostName: '이호스텔',
         hostPhone: '02-3456-7890',
@@ -425,7 +428,7 @@ async function main() {
           nameJp: 'タクアン',
           nameCn: '萝卜泡菜',
           price: 500,
-          isRequired: false,
+          isRequired: false,  
           isActive: true,
           sortOrder: 7
         }

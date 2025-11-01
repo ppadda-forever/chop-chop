@@ -145,14 +145,14 @@ function HomeContent() {
                 {t('home', 'deliveringTo', currentLanguage)} {getTranslatedField(accommodation, 'name', currentLanguage)}
               </p>
               <p className="text-xs text-chop-brown">
-                {accommodation.address}
+                {currentLanguage === 'ko' ? accommodation.address : (accommodation.addressEn || accommodation.address)}
               </p>
             </div>
           </div>
         </div>
       )}
       
-      <div className="flex-1">
+      <div className="flex-1 pb-20">
         {/* Hero Section */}
         <div className="relative h-96 bg-gradient-to-r from-black/10 to-black/40">
           <div 
@@ -204,9 +204,11 @@ function HomeContent() {
                       <h3 className="font-medium text-chop-brown text-sm mb-1 font-jakarta">
                         {getTranslatedField(item, 'name', currentLanguage)}
                       </h3>
-                      <p className="text-chop-gray text-xs mb-2 line-clamp-2">
-                        {getTranslatedField(item, 'description', currentLanguage)}
-                      </p>
+                      {getTranslatedField(item, 'description', currentLanguage) && (
+                        <p className="text-chop-gray text-xs mb-2 line-clamp-2">
+                          {getTranslatedField(item, 'description', currentLanguage)}
+                        </p>
+                      )}
                       <p className="text-chop-orange font-bold text-sm mb-1">
                         ₩{item.basePrice.toLocaleString()}
                       </p>

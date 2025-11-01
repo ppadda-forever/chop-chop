@@ -7,7 +7,7 @@ const LanguageContext = createContext()
 export const languages = [
   { code: 'en', name: 'English', flag: '🇺🇸', suffix: 'En' },
   { code: 'ja', name: 'Japanese', flag: '🇯🇵', suffix: 'Jp' },
-  { code: 'zh', name: 'Chinese', flag: '🇨🇳', suffix: 'Cn' },
+  { code: 'cn', name: 'Chinese', flag: '🇨🇳', suffix: 'Cn' },
   { code: 'ko', name: 'Korean', flag: '🇰🇷', suffix: '' }
 ]
 

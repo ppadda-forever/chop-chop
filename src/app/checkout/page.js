@@ -199,7 +199,7 @@ export default function Checkout() {
     <div className="bg-chop-cream min-h-screen flex flex-col">
       <Header title={t('checkout', 'title', currentLanguage)} showBackButton={true} />
       
-      <div className="flex-1 px-4 py-5">
+      <div className="flex-1 px-4 py-5 pb-56">
         {/* Order Summary */}
         <div className="bg-white rounded-lg p-4 mb-4">
           <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
@@ -215,7 +215,7 @@ export default function Checkout() {
                 </h3>
                 {group.items.map((item) => (
                   <div key={item.cartId} className="flex justify-between text-sm text-chop-gray ml-2">
-                    <span>{item.nameEn || item.nameJp || item.nameCn || item.name} x{item.quantity}</span>
+                    <span>{getTranslatedField(item, 'name', currentLanguage)} x{item.quantity}</span>
                     <span>₩{(item.totalPrice * item.quantity).toLocaleString()}</span>
                   </div>
                 ))}
@@ -332,37 +332,39 @@ export default function Checkout() {
         </div>
       </div>
 
-      {/* Minimum Order Warning */}
-      {!minOrderCheck.isValid && items.length > 0 && (
-        <div className="px-4 py-3 bg-yellow-50 border-t border-yellow-200">
-          <div className="flex items-start gap-3">
-            <svg className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
-            <div className="flex-1">
-              <p className="text-sm text-yellow-800 font-medium">
-                {minOrderCheck.message}
-              </p>
+      {/* Fixed Place Order Button above BottomNavigation */}
+      <div className="fixed bottom-20 left-0 right-0 bg-chop-cream border-t border-chop-border z-20">
+        {/* Minimum Order Warning */}
+        {!minOrderCheck.isValid && items.length > 0 && (
+          <div className="px-4 py-3 bg-yellow-50 border-b border-yellow-200">
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <div className="flex-1">
+                <p className="text-sm text-yellow-800 font-medium">
+                  {minOrderCheck.message}
+                </p>
+              </div>
             </div>
           </div>
+        )}
+        
+        <div className="px-4 py-3">
+          <button 
+            onClick={handlePayment}
+            disabled={
+              isLoading || 
+              items.length === 0 || 
+              !minOrderCheck.isValid || 
+              (PAYMENT_METHODS[paymentMethod]?.requiresExchange && !exchangeRate)
+            }
+            className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors disabled:bg-gray-400 shadow-lg"
+          >
+            {isLoading ? t('common', 'loading', currentLanguage) : 
+             `${t('checkout', 'placeOrder', currentLanguage)} (₩${total.toLocaleString()})`}
+          </button>
         </div>
-      )}
-
-      {/* 결제하기 버튼 */}
-      <div className="px-4 py-3 bg-chop-cream border-t border-chop-border">
-        <button 
-          onClick={handlePayment}
-          disabled={
-            isLoading || 
-            items.length === 0 || 
-            !minOrderCheck.isValid || 
-            (PAYMENT_METHODS[paymentMethod]?.requiresExchange && !exchangeRate)
-          }
-          className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors disabled:bg-gray-400"
-        >
-          {isLoading ? t('common', 'loading', currentLanguage) : 
-           `${t('checkout', 'placeOrder', currentLanguage)} (₩${total.toLocaleString()})`}
-        </button>
       </div>
 
       <BottomNavigation />

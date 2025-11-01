@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation'
 import { getRestaurantById } from '../../../services/clientApi'
 import { useCart } from '../../../contexts/CartContext'
 import Header from '../../../components/Header'
-import BottomNavigation from '../../../components/BottomNavigation'
 import { useLanguage } from '../../../contexts/LanguageContext'
 import { getTranslatedField, t } from '../../../utils/translation'
 
@@ -59,7 +58,7 @@ export default function RestaurantMenu() {
     <div className="bg-chop-cream min-h-screen flex flex-col">
       <Header title={getTranslatedField(restaurant, 'name', currentLanguage)} showBackButton={true} />
       
-      <div className="flex-1">
+      <div className="flex-1 overflow-y-auto pb-20">
         {/* Restaurant Hero Image */}
         <div 
           className="h-56 bg-cover bg-center"
@@ -88,9 +87,11 @@ export default function RestaurantMenu() {
                     <h3 className="font-medium text-chop-brown text-base mb-1 font-jakarta">
                       {getTranslatedField(item, 'name', currentLanguage)} (₩{item.basePrice.toLocaleString()})
                     </h3>
-                    <p className="text-chop-light-brown text-sm">
-                      {getTranslatedField(item, 'description', currentLanguage)}
-                    </p>
+                    {getTranslatedField(item, 'description', currentLanguage) && (
+                      <p className="text-chop-light-brown text-sm">
+                        {getTranslatedField(item, 'description', currentLanguage)}
+                      </p>
+                    )}
                   </div>
                 </div>
                 
@@ -108,19 +109,17 @@ export default function RestaurantMenu() {
         </div>
       </div>
 
-      {/* Order Button */}
+      {/* Fixed Order Button */}
       {getTotalPrice() > 0 && (
-        <div className="px-4 py-3 bg-chop-cream border-t border-chop-border">
+        <div className="fixed bottom-0 left-0 right-0 px-4 py-3 bg-chop-cream border-t border-chop-border z-10">
           <button 
             onClick={() => router.push('/cart')}
-            className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors"
+            className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors shadow-lg"
           >
             {t('common', 'cart', currentLanguage)} (₩{getTotalPrice().toLocaleString()})
           </button>
         </div>
       )}
-
-      <BottomNavigation />
     </div>
   )
 }

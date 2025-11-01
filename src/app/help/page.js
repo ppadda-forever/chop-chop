@@ -1,44 +1,47 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import Header from '../../components/Header'
 import BottomNavigation from '../../components/BottomNavigation'
+import { useLanguage } from '../../contexts/LanguageContext'
+import { t } from '../../utils/translation'
 
 export default function Help() {
   const [expandedFAQ, setExpandedFAQ] = useState(null)
+  const { currentLanguage } = useLanguage()
 
   const toggleFAQ = (index) => {
     setExpandedFAQ(expandedFAQ === index ? null : index)
   }
 
-  const faqs = [
+  const faqs = useMemo(() => [
     {
-      question: "How long does delivery take?",
-      answer: "Delivery typically takes 25-45 minutes depending on your location and restaurant."
+      question: t('help', 'deliveryTime', currentLanguage),
+      answer: t('help', 'deliveryTimeAnswer', currentLanguage)
     },
     {
-      question: "What payment methods do you accept?",
-      answer: "We accept credit cards, debit cards, and cash on delivery."
+      question: t('help', 'paymentMethods', currentLanguage),
+      answer: t('help', 'paymentMethodsAnswer', currentLanguage)
     },
     {
-      question: "Can I cancel my order?",
-      answer: "You can cancel your order within 5 minutes of placing it. After that, please contact us directly."
+      question: t('help', 'cancelOrder', currentLanguage),
+      answer: t('help', 'cancelOrderAnswer', currentLanguage)
     },
     {
-      question: "Do you deliver to my area?",
-      answer: "We deliver to most areas in Seoul. Check the restaurant page to see if delivery is available to your location."
+      question: t('help', 'deliveryArea', currentLanguage),
+      answer: t('help', 'deliveryAreaAnswer', currentLanguage)
     },
     {
-      question: "What if my order is wrong or missing items?",
-      answer: "Please contact us immediately and we'll make it right. We'll either redeliver the correct items or provide a full refund."
+      question: t('help', 'wrongOrder', currentLanguage),
+      answer: t('help', 'wrongOrderAnswer', currentLanguage)
     }
-  ]
+  ], [currentLanguage])
 
   return (
     <div className="bg-white min-h-screen flex flex-col">
-      <Header title="Help" showBackButton={false} />
+      <Header title={t('help', 'title', currentLanguage)} showBackButton={false} />
       
-      <div className="flex-1 px-4 py-6">
+      <div className="flex-1 px-4 py-6 pb-20">
         {/* Hero Section */}
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-chop-orange rounded-full flex items-center justify-center mx-auto mb-4">
@@ -47,17 +50,17 @@ export default function Help() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-chop-brown mb-2 font-jakarta">
-            How can we help you?
+            {t('help', 'howCanWeHelp', currentLanguage)}
           </h1>
           <p className="text-chop-gray text-base">
-            Find answers to common questions or get in touch with our support team
+            {t('help', 'helpDescription', currentLanguage)}
           </p>
         </div>
 
         {/* Contact Us Section */}
         <div className="mb-8">
           <h2 className="text-xl font-bold text-chop-brown mb-4 font-jakarta">
-            Contact Us
+            {t('help', 'contactUs', currentLanguage)}
           </h2>
           <div className="space-y-4">
             <a 
@@ -72,7 +75,7 @@ export default function Help() {
                 </svg>
               </div>
               <div className="flex-1">
-                <p className="text-chop-brown font-semibold text-base">Instagram DM</p>
+                <p className="text-chop-brown font-semibold text-base">{t('help', 'instagramDm', currentLanguage)}</p>
                 <p className="text-chop-gray text-sm">@chopchop_seoul</p>
               </div>
               <svg className="w-5 h-5 text-chop-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,7 +88,7 @@ export default function Help() {
         {/* FAQ Section */}
         <div>
           <h2 className="text-xl font-bold text-chop-brown mb-4 font-jakarta">
-            Frequently Asked Questions
+            {t('help', 'faq', currentLanguage)}
           </h2>
           <div className="space-y-3">
             {faqs.map((faq, index) => (

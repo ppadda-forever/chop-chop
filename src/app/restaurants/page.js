@@ -59,7 +59,7 @@ export default function Restaurants() {
     <div className="bg-chop-cream min-h-screen flex flex-col">
       <Header title={t('restaurants', 'title', currentLanguage)} />
       
-      <div className="flex-1">
+      <div className="flex-1 pb-20">
         {/* Category Filters */}
         <div className="px-3 py-3">
           <div className="flex gap-3 overflow-x-auto pb-2">

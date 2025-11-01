@@ -16,6 +16,7 @@ model Accommodation {
   name         String
   nameEn       String   @map("name_en")
   address      String
+  addressEn    String   @map("address_en")
   area         Area
   hostName     String   @map("host_name")
   hostPhone    String   @map("host_phone")

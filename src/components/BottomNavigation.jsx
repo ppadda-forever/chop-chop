@@ -66,7 +66,7 @@ const BottomNavigation = () => {
   };
 
   return (
-    <div className="bg-chop-cream border-t border-chop-border">
+    <div className="fixed bottom-0 left-0 right-0 bg-chop-cream border-t border-chop-border z-10">
         <div className="flex items-center justify-around px-4 py-3">
           {navItems.map((item) => (
             <button
