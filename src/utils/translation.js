@@ -525,6 +525,12 @@ export const translations = {
       cn: '送达成功！',
       ko: '배달 완료!'
     },
+    pickupFood: {
+      en: 'Please pick up your food at the front door!',
+      ja: '玄関前で料理をお受け取りください！',
+      cn: '请到门口取餐！',
+      ko: '현관문 앞에서 음식을 가져가주세요!'
+    },
     expectedTime: {
       en: 'Expected in 35-55 minutes',
       ja: '35-55分以内に配達予定',

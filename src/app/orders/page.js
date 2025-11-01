@@ -163,31 +163,39 @@ export default function Orders() {
                       {trackingSteps.map((step, stepIndex) => (
                         <div key={step.id} className="flex gap-4 items-start">
                           <div className="flex flex-col items-center">
-                            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
+                            <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${
                               step.id === 'cancelled'
-                                ? 'bg-red-100 border-red-300'
-                                : step.isCompleted
-                                  ? 'bg-chop-brown border-chop-brown'
-                                  : 'bg-white border-gray-300'
+                                ? 'bg-red-100 border-red-400'
+                                : step.id === 'delivered' && step.isCompleted
+                                  ? 'bg-green-500 border-green-500 shadow-lg shadow-green-200'
+                                  : step.isCompleted
+                                    ? 'bg-chop-brown border-chop-brown'
+                                    : 'bg-white border-black'
                             }`}>
                               {step.id === 'cancelled' ? (
-                                <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                               ) : (
                                 step.isCompleted && (
-                                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                  <svg className={`${step.id === 'delivered' ? 'w-6 h-6' : 'w-5 h-5'} text-white`} fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
                                   </svg>
                                 )
                               )}
                             </div>
                             {stepIndex < trackingSteps.length - 1 && (
-                              <div className="w-0.5 h-12 bg-gray-200 mt-2" />
+                              <div className={`w-0.5 h-12 mt-2 ${
+                                step.isCompleted ? 'bg-chop-brown' : 'bg-gray-300'
+                              }`} />
                             )}
                           </div>
                           <div className="flex-1 min-h-[32px] flex flex-col justify-center">
-                            <h3 className="font-semibold text-chop-brown text-base">
+                            <h3 className={`font-semibold text-base ${
+                              step.id === 'delivered' && step.isCompleted 
+                                ? 'text-green-600' 
+                                : 'text-chop-brown'
+                            }`}>
                               {step.label}
                             </h3>
                             {step.id === 'placed' && (
@@ -196,9 +204,16 @@ export default function Orders() {
                               </p>
                             )}
                             {step.id === 'delivered' && step.isCompleted && (
-                              <p className="text-green-600 text-sm mt-1 font-medium">
-                                {t('orders', 'successfullyDelivered', currentLanguage)}
-                              </p>
+                              <div className="mt-2 bg-orange-50 border-2 border-orange-400 rounded-lg p-3">
+                                <div className="flex items-center gap-2">
+                                  <svg className="w-5 h-5 text-orange-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                  </svg>
+                                  <p className="text-orange-700 text-sm font-bold">
+                                    {t('orders', 'pickupFood', currentLanguage)}
+                                  </p>
+                                </div>
+                              </div>
                             )}
                             {step.id === 'delivered' && !step.isCompleted && (
                               <p className="text-chop-orange text-sm mt-1 font-medium">

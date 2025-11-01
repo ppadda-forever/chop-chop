@@ -108,7 +108,7 @@ function CheckoutConfirmationContent() {
   }
 
   const getDeliveryTimeEstimate = () => {
-    return '35-45 minutes'
+    return '35-55 minutes'
   }
 
   const formatPrice = (price) => {
