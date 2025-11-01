@@ -295,6 +295,12 @@ export const translations = {
       cn: '特殊说明',
       ko: '특별 요청사항'
     },
+    specialInstructionsPlaceholder: {
+      en: 'Any special instructions for your order...',
+      ja: 'ご注文に関する特別なご要望...',
+      cn: '订单的任何特殊说明...',
+      ko: '주문에 대한 특별 요청사항...'
+    },
     paymentMethod: {
       en: 'Payment Method',
       ja: '支払い方法',

@@ -6,7 +6,7 @@ import { useCart } from '../../contexts/CartContext'
 import Header from '../../components/Header'
 import BottomNavigation from '../../components/BottomNavigation'
 import { analytics } from '../../utils/analytics'
-import { processPayment, createOrderAfterPayPalPayment } from '../../services/paymentService'
+import { processPayment } from '../../services/paymentService'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { getTranslatedField, t } from '../../utils/translation'
 
@@ -64,11 +64,15 @@ export default function Checkout() {
     if (savedAccommodation) {
       const accommodationData = JSON.parse(savedAccommodation)
       setAccommodation(accommodationData)
-      setDeliveryAddress(accommodationData.address)
+      // 언어에 맞는 주소 설정
+      const address = currentLanguage === 'ko' 
+        ? accommodationData.address 
+        : (accommodationData.addressEn || accommodationData.address)
+      setDeliveryAddress(address)
     }
     // 체크아웃 방문 추적 (세션+숙소 기준 최초 1회)
     analytics.trackCheckoutViewOncePerSessionPerAccommodation()
-  }, [])
+  }, [currentLanguage])
 
   useEffect(() => {
     // 환율이 필요한 결제 수단인 경우 환율 조회
@@ -78,49 +82,7 @@ export default function Checkout() {
     }
   }, [paymentMethod, total])
 
-  // checkout 페이지의 useEffect에 추가
-  useEffect(() => {
-    // PayPal 결제 완료 메시지 리스너
-    const handlePayPalMessage = async (event) => {
-      if (event.origin !== window.location.origin) return
-      
-      switch (event.data.type) {
-        case 'PAYPAL_PAYMENT_SUCCESS':
-          try {
-            await createOrderAfterPayPalPayment(event.data, setIsLoading, (order) => {
-              // 주문 완료 추적
-              analytics.trackOrderComplete(order.id, total)
-              clearCart() // Clear cart after successful order
-              setIsLoading(false) // 로딩 상태 해제
-              router.push(`/checkout-confirmation?orderId=${order.id}`)
-            }, (error) => {
-              setIsLoading(false) // 로딩 상태 해제
-              alert(`주문 생성 실패: ${error.message}`)
-            })
-          } catch (error) {
-            console.error('Error handling PayPal success:', error)
-            setIsLoading(false) // 로딩 상태 해제
-          }
-          break
-          
-        case 'PAYPAL_PAYMENT_ERROR':
-          setIsLoading(false) // 로딩 상태 해제
-          alert(`PayPal 결제 오류: ${event.data.error}`)
-          break
-          
-        case 'PAYPAL_PAYMENT_CANCELLED':
-          setIsLoading(false) // 로딩 상태 해제
-          alert('PayPal 결제가 취소되었습니다.')
-          break
-      }
-    }
-    
-    window.addEventListener('message', handlePayPalMessage)
-    
-    return () => {
-      window.removeEventListener('message', handlePayPalMessage)
-    }
-  }, [router])
+  // PayPal 리다이렉트 방식으로 변경했으므로 메시지 리스너 제거됨
 
   const fetchExchangeRate = async () => {
     try {
@@ -247,7 +209,7 @@ export default function Checkout() {
           {accommodation && (
             <div className="mb-2 p-2 bg-chop-cream rounded-lg">
               <p className="text-sm text-chop-brown">
-                <strong>{accommodation.name}</strong> - Address auto-filled from QR scan
+                <strong>{currentLanguage === 'ko' ? accommodation.name : (accommodation.nameEn || accommodation.name)}</strong> - Address auto-filled from QR scan
               </p>
             </div>
           )}
@@ -271,7 +233,7 @@ export default function Checkout() {
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Any special instructions for your order..."
+            placeholder={t('checkout', 'specialInstructionsPlaceholder', currentLanguage)}
             className="w-full p-3 border border-chop-border rounded-lg text-chop-brown"
             rows={3}
           />
