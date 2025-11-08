@@ -9,16 +9,23 @@ export async function createOrder(orderData) {
   try {
     const { accommodationId, orderItems, paymentMethod, notes } = orderData
     
-    // 총 금액 계산
-    const totalAmount = orderItems.reduce((sum, item) => {
+    // 음식 금액 계산 (subtotal)
+    const subtotal = orderItems.reduce((sum, item) => {
       return sum + (item.unitPrice * item.quantity)
     }, 0)
+    
+    // 서비스 수수료 계산
+    const serviceFee = Math.round(3000 + (subtotal * 0.06))
+    
+    // 총 금액 계산
+    const totalAmount = subtotal + serviceFee
     
     const order = await prisma.order.create({
       data: {
         accommodationId,
+        subtotal,
+        serviceFee,
         totalAmount,
-        deliveryFee: 3000, // 기본 배달비
         paymentMethod,
         notes,
         orderItems: {

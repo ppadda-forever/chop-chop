@@ -75,8 +75,8 @@ export default function Checkout() {
   
   const cartGroups = getCartItemsByRestaurant()
   const subtotal = getTotalPrice()
-  const deliveryFee = 3000
-  const total = subtotal + deliveryFee
+  const serviceFee = Math.round(3000 + (subtotal * 0.06))
+  const total = subtotal + serviceFee
   const minOrderCheck = checkMinOrderAmount()
 
   useEffect(() => {
@@ -159,8 +159,8 @@ export default function Checkout() {
       items,
       paymentMethod,
       notes,
-      total,
-      deliveryFee,
+      subtotal,
+      serviceFee,
       accommodationId: accommodation?.id || null,
     }
 
@@ -218,8 +218,8 @@ export default function Checkout() {
               <span className="text-chop-brown">₩{subtotal.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-chop-brown">{t('cart', 'deliveryFee', currentLanguage)}</span>
-              <span className="text-chop-brown">₩{deliveryFee.toLocaleString()}</span>
+              <span className="text-chop-brown">{t('cart', 'serviceFee', currentLanguage)}</span>
+              <span className="text-chop-brown">₩{serviceFee.toLocaleString()}</span>
             </div>
             <div className="flex justify-between font-bold text-lg border-t pt-2">
               <span className="text-chop-brown">{t('cart', 'total', currentLanguage)}</span>
@@ -319,10 +319,10 @@ export default function Checkout() {
           {PAYMENT_METHODS[paymentMethod]?.requiresExchange && (
             <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
               <div className="text-xs text-orange-800">
-                결제 금액: ₩{total.toLocaleString()} (약 ${usdAmount.toFixed(2)} USD)
+                Payment amount: ₩{total.toLocaleString()} (${usdAmount.toFixed(2)} USD)
                 {exchangeRate && (
                   <span className="block mt-1">
-                    환율: 1 USD = {(1/exchangeRate.krwToUsd).toLocaleString()} KRW
+                    Exchange rate: 1 USD = {(1/exchangeRate.krwToUsd).toLocaleString()} KRW
                   </span>
                 )}
               </div>

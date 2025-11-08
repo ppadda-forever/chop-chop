@@ -207,11 +207,11 @@ export const translations = {
       cn: '小计',
       ko: '소계'
     },
-    deliveryFee: {
-      en: 'Delivery Fee',
-      ja: '配達料',
-      cn: '配送费',
-      ko: '배달비'
+    serviceFee: {
+      en: 'Tax & Service Fee',
+      ja: '税金・サービス料',
+      cn: '税费和服务费',
+      ko: '세금 및 서비스 수수료'
     },
     total: {
       en: 'Total',
@@ -437,11 +437,11 @@ export const translations = {
       cn: '订单金额',
       ko: '주문 금액'
     },
-    deliveryFee: {
-      en: 'Delivery Fee',
-      ja: '配達料',
-      cn: '配送费',
-      ko: '배달비'
+    serviceFee: {
+      en: 'Tax & Service Fee',
+      ja: '税金・サービス料',
+      cn: '税费和服务费',
+      ko: '세금 및 서비스 수수료'
     },
     totalAmount: {
       en: 'Total Amount',

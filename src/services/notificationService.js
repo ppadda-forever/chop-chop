@@ -21,8 +21,8 @@ export async function sendDiscordOrderNotification(order, webhookUrl) {
       return `• ${item.menuItem.name}${optionText} x${item.quantity} - ₩${item.unitPrice.toLocaleString()}`
     }).join('\n')
 
-    // Calculate total with delivery fee
-    const totalWithDelivery = order.totalAmount + order.deliveryFee
+    // Calculate total (already includes serviceFee in totalAmount)
+    const totalWithServiceFee = order.totalAmount
 
     // Create rich embed for Discord
     const embed = {
@@ -47,7 +47,7 @@ export async function sendDiscordOrderNotification(order, webhookUrl) {
         },
         {
           name: "💰 금액 정보",
-          value: `**주문 금액:** ₩${order.totalAmount.toLocaleString()}\n**배달비:** ₩${order.deliveryFee.toLocaleString()}\n**총 금액:** ₩${totalWithDelivery.toLocaleString()}`,
+          value: `**음식 금액:** ₩${order.subtotal.toLocaleString()}\n**서비스 수수료:** ₩${order.serviceFee.toLocaleString()}\n**총 금액:** ₩${totalWithServiceFee.toLocaleString()}`,
           inline: true
         }
       ],
@@ -75,7 +75,7 @@ export async function sendDiscordOrderNotification(order, webhookUrl) {
     }
 
     const payload = {
-      content: `@here 새로운 주문 알림! 총 금액: ₩${totalWithDelivery.toLocaleString()}`,
+      content: `@here 새로운 주문 알림! 총 금액: ₩${totalWithServiceFee.toLocaleString()}`,
       embeds: [embed]
     }
 
@@ -116,10 +116,10 @@ export async function sendSlackOrderNotification(order, webhookUrl) {
       return `• ${item.menuItem.name}${optionText} x${item.quantity} - ₩${item.unitPrice.toLocaleString()}`
     }).join('\n')
 
-    const totalWithDelivery = order.totalAmount + order.deliveryFee
+    const totalWithServiceFee = order.totalAmount
 
     const payload = {
-      text: `🍽️ 새로운 주문 알림! 총 금액: ₩${totalWithDelivery.toLocaleString()}`,
+      text: `🍽️ 새로운 주문 알림! 총 금액: ₩${totalWithServiceFee.toLocaleString()}`,
       blocks: [
         {
           type: "header",
@@ -145,7 +145,7 @@ export async function sendSlackOrderNotification(order, webhookUrl) {
             },
             {
               type: "mrkdwn",
-              text: `*총 금액:*\n₩${totalWithDelivery.toLocaleString()}`
+              text: `*총 금액:*\n₩${totalWithServiceFee.toLocaleString()}`
             }
           ]
         },
@@ -220,8 +220,8 @@ export async function sendSMSOrderNotification(order, smsConfig) {
     return
   }
 
-  const totalWithDelivery = order.totalAmount + order.deliveryFee
-  const message = `🍽️ 새 주문! ${order.accommodation.name}에서 ₩${totalWithDelivery.toLocaleString()} 주문 (${order.id})`
+  const totalWithServiceFee = order.totalAmount
+  const message = `🍽️ 새 주문! ${order.accommodation.name}에서 ₩${totalWithServiceFee.toLocaleString()} 주문 (${order.id})`
 
   console.log('SMS notification would be sent:', message)
   
@@ -248,14 +248,14 @@ export async function sendTelegramOrderNotification(order, telegramConfig) {
       return `• ${item.menuItem.name}${optionText} x${item.quantity} - ₩${item.unitPrice.toLocaleString()}`
     }).join('\n')
 
-    const totalWithDelivery = order.totalAmount + order.deliveryFee
+    const totalWithServiceFee = order.totalAmount
 
     let message = `🍽️ *새로운 주문 알림!*\n\n`
     message += `📋 *주문 번호:* ${order.id}\n`
     message += `🏨 *숙소:* ${order.accommodation.name}\n`
     message += `💳 *결제:* ${order.paymentMethod} (${order.paymentStatus})\n\n`
     message += `🛒 *주문 내역:*\n${orderItemsText}\n\n`
-    message += `💰 *총 금액:* ₩${totalWithDelivery.toLocaleString()}`
+    message += `💰 *총 금액:* ₩${totalWithServiceFee.toLocaleString()}`
     
     if (order.notes) {
       message += `\n\n📝 *요청사항:* ${order.notes}`

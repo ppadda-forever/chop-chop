@@ -179,16 +179,16 @@ function CheckoutConfirmationContent() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-chop-brown">{t('confirmation', 'orderAmount', currentLanguage)}</span>
-                  <span className="text-chop-brown">{formatPrice(orderInfo.totalAmount || 0)}</span>
+                  <span className="text-chop-brown">{formatPrice(orderInfo.subtotal || 0)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-chop-brown">{t('confirmation', 'deliveryFee', currentLanguage)}</span>
-                  <span className="text-chop-brown">{formatPrice(orderInfo.deliveryFee || 0)}</span>
+                  <span className="text-chop-brown">{t('cart', 'serviceFee', currentLanguage)}</span>
+                  <span className="text-chop-brown">{formatPrice(orderInfo.serviceFee || 0)}</span>
                 </div>
                 <div className="flex justify-between border-t pt-2">
                   <span className="text-chop-brown font-semibold">{t('confirmation', 'totalAmount', currentLanguage)}</span>
                   <span className="text-chop-orange font-bold">
-                    {formatPrice((orderInfo.totalAmount || 0) + (orderInfo.deliveryFee || 0))}
+                    {formatPrice(orderInfo.totalAmount || 0)}
                   </span>
                 </div>
               </div>
@@ -245,19 +245,19 @@ function CheckoutConfirmationContent() {
             <div className="flex justify-between">
               <span className="text-chop-brown">{t('cart', 'subtotal', currentLanguage)}</span>
               <span className="text-chop-brown">
-                {orderInfo ? formatPrice(orderInfo.totalAmount) : '₩0'}
+                {orderInfo ? formatPrice(orderInfo.subtotal) : '₩0'}
               </span>
             </div>
-            {orderInfo && orderInfo.deliveryFee && orderInfo.deliveryFee > 0 && (
+            {orderInfo && orderInfo.serviceFee && orderInfo.serviceFee > 0 && (
               <div className="flex justify-between">
-                <span className="text-chop-brown">{t('cart', 'deliveryFee', currentLanguage)}</span>
-                <span className="text-chop-brown">{formatPrice(orderInfo.deliveryFee)}</span>
+                <span className="text-chop-brown">{t('cart', 'serviceFee', currentLanguage)}</span>
+                <span className="text-chop-brown">{formatPrice(orderInfo.serviceFee)}</span>
               </div>
             )}
             <div className="flex justify-between border-t pt-2">
               <span className="text-chop-brown font-semibold">{t('cart', 'total', currentLanguage)}</span>
               <span className="text-chop-orange font-bold">
-                {orderInfo ? formatPrice((orderInfo.totalAmount || 0) + (orderInfo.deliveryFee || 0)) : '₩0'}
+                {orderInfo ? formatPrice(orderInfo.totalAmount) : '₩0'}
               </span>
             </div>
           </div>

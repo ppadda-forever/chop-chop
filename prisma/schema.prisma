@@ -103,8 +103,9 @@ model MenuOption {
 model Order {
   id                   String   @id @default(uuid())
   accommodationId      String   @map("accommodation_id")
-  totalAmount          Int      @map("total_amount")
-  deliveryFee          Int      @default(3000) @map("delivery_fee")
+  subtotal             Int      // 음식 주문 가격
+  serviceFee           Int      @default(3000) @map("service_fee")
+  totalAmount          Int      @map("total_amount") // 총 금액 (subtotal + serviceFee)
   status               OrderStatus @default(PENDING)
   paymentMethod        String   @map("payment_method")
   paymentStatus        PaymentStatus @default(PENDING) @map("payment_status")

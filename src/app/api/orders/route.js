@@ -5,7 +5,7 @@ import { sendOrderNotifications } from '../../../services/notificationService'
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { items, paymentMethod, notes, total, deliveryFee, accommodationId, paymentDetails } = body
+    const { items, paymentMethod, notes, subtotal, serviceFee, accommodationId, paymentDetails } = body
 
     // accommodationId 유효성 확인 및 조회
     let resolvedAccommodationId = accommodationId
@@ -33,13 +33,17 @@ export async function POST(request) {
     const paymentStatus = 'PENDING'
     const paypalOrderId = null
     const paypalCaptureId = null
+    
+    // Calculate total if not provided
+    const totalAmount = subtotal + serviceFee
 
     // 주문 생성
     const order = await prisma.order.create({
       data: {
         accommodationId: resolvedAccommodationId,
-        totalAmount: total - deliveryFee, // 배달비 제외한 실제 주문 금액
-        deliveryFee: deliveryFee,
+        subtotal: subtotal, // 음식 주문 가격
+        serviceFee: serviceFee, // 서비스 수수료
+        totalAmount: totalAmount, // 총 금액 (subtotal + serviceFee)
         paymentMethod,
         paymentStatus,
         notes,

@@ -21,6 +21,9 @@ export default function Cart() {
   } = useCart()
 
   const cartGroups = getCartItemsByRestaurant()
+  const subtotal = getTotalPrice()
+  const serviceFee = Math.round(3000 + (subtotal * 0.06))
+  const total = subtotal + serviceFee
 
   if (items.length === 0) {
     return (
@@ -152,15 +155,15 @@ export default function Cart() {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-chop-brown">{t('cart', 'subtotal', currentLanguage)}</span>
-              <span className="text-chop-brown">₩{getTotalPrice().toLocaleString()}</span>
+              <span className="text-chop-brown">₩{subtotal.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-chop-brown">{t('cart', 'deliveryFee', currentLanguage)}</span>
-              <span className="text-chop-brown">₩3,000</span>
+              <span className="text-chop-brown">{t('cart', 'serviceFee', currentLanguage)}</span>
+              <span className="text-chop-brown">₩{serviceFee.toLocaleString()}</span>
             </div>
             <div className="flex justify-between font-bold text-lg border-t pt-2">
               <span className="text-chop-brown">{t('cart', 'total', currentLanguage)}</span>
-              <span className="text-chop-orange">₩{(getTotalPrice() + 3000).toLocaleString()}</span>
+              <span className="text-chop-orange">₩{total.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -172,7 +175,7 @@ export default function Cart() {
           onClick={() => router.push('/checkout')}
           className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors shadow-lg"
         >
-          {t('cart', 'proceedToCheckout', currentLanguage)} (₩{(getTotalPrice() + 3000).toLocaleString()})
+          {t('cart', 'proceedToCheckout', currentLanguage)} (₩{total.toLocaleString()})
         </button>
       </div>
 

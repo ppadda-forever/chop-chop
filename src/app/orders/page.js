@@ -289,11 +289,11 @@ export default function Orders() {
                       <div className="border-t border-gray-200 mt-4 pt-4 space-y-2">
                         <div className="flex justify-between text-sm">
                           <span className="text-chop-gray">{t('cart', 'subtotal', currentLanguage)}:</span>
-                          <span className="text-chop-brown">₩{(order.totalAmount - order.deliveryFee).toLocaleString()}</span>
+                          <span className="text-chop-brown">₩{order.subtotal.toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span className="text-chop-gray">{t('cart', 'deliveryFee', currentLanguage)}:</span>
-                          <span className="text-chop-brown">₩{order.deliveryFee.toLocaleString()}</span>
+                          <span className="text-chop-gray">{t('cart', 'serviceFee', currentLanguage)}:</span>
+                          <span className="text-chop-brown">₩{order.serviceFee.toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between text-lg font-bold border-t border-gray-200 pt-3">
                           <span className="text-chop-brown">{t('cart', 'total', currentLanguage)}:</span>
