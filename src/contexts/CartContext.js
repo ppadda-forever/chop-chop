@@ -209,7 +209,7 @@ export const CartProvider = ({ children }) => {
     if (currentRestaurantId && currentRestaurantId !== newMenuItem.restaurant?.id) {
       return {
         isValid: false,
-        message: `You can only order from one restaurant at a time. Clear your cart to order from "${newMenuItem.restaurant?.name}".`,
+        message: `You can only order from one restaurant at a time. Clear your cart to order from "${newMenuItem.restaurant?.nameEn}".`,
         currentRestaurant: state.items[0].restaurant?.name,
         newRestaurant: newMenuItem.restaurant?.name,
         needsClearCart: true

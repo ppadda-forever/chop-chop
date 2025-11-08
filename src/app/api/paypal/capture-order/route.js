@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server'
 import { capturePayPalOrder } from '../../../../lib/paypal'
 
 export async function POST(request) {
+  let orderID
   try {
     console.log('=== PayPal Capture Order API ===')
-    const { orderID } = await request.json()
+    const body = await request.json()
+    orderID = body.orderID
     console.log('1. Order ID received:', orderID)
 
     // 입력값 검증
@@ -54,6 +56,35 @@ export async function POST(request) {
   } catch (error) {
     console.error('❌ Error capturing PayPal payment:', error)
     console.error('Error message:', error.message)
+    
+    // ORDER_ALREADY_CAPTURED 에러 처리 (이미 캡처된 주문 - 중복 요청)
+    if (error.message && error.message.includes('ORDER_ALREADY_CAPTURED')) {
+      console.log('⚠️  Order already captured. Fetching order details...')
+      
+      try {
+        // 이미 캡처된 주문 정보 조회
+        const { getPayPalOrderDetails } = await import('../../../../lib/paypal')
+        const orderDetails = await getPayPalOrderDetails(orderID)
+        
+        const captureInfo = orderDetails.purchase_units[0]?.payments?.captures[0]
+        
+        if (captureInfo && captureInfo.status === 'COMPLETED') {
+          console.log('✅ Returning existing capture data')
+          return NextResponse.json({
+            success: true,
+            orderID: orderDetails.id,
+            captureID: captureInfo.id,
+            status: captureInfo.status,
+            amount: captureInfo.amount,
+            captureData: orderDetails,
+            alreadyCaptured: true // 이미 캡처되었음을 표시
+          })
+        }
+      } catch (fetchError) {
+        console.error('❌ Error fetching already captured order:', fetchError)
+      }
+    }
+    
     console.error('Error stack:', error.stack)
     
     return NextResponse.json(

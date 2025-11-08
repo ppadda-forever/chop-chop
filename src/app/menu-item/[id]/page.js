@@ -17,6 +17,7 @@ export default function MenuOption() {
   const [selectedOptions, setSelectedOptions] = useState({})
   const [quantity, setQuantity] = useState(1)
   const [showRestaurantWarning, setShowRestaurantWarning] = useState(false)
+  const [restaurantWarningData, setRestaurantWarningData] = useState(null)
   const { currentLanguage } = useLanguage()
 
   useEffect(() => {
@@ -28,14 +29,18 @@ export default function MenuOption() {
         
         // Initialize selected options with default values
         const initialOptions = {}
-        data.menuOptions.forEach(option => {
-          if (option.isRequired && option.type === 'SIZE') {
-            initialOptions[option.id] = option
-          }
-          if (option.isRequired && option.type === 'SPICY') {
-            initialOptions[option.id] = option
+        const types = ['SIZE', 'SPICY', 'MENU']
+        types.forEach(type => {
+          const requiredOptionsOfType = data.menuOptions
+            .filter(opt => opt.type === type && opt.isRequired)
+            .sort((a, b) => a.sortOrder - b.sortOrder) // sortOrder 기준 오름차순 정렬
+          
+          if (requiredOptionsOfType.length > 0) {
+            const firstOption = requiredOptionsOfType[0] // 첫 번째 옵션 선택
+            initialOptions[firstOption.id] = firstOption
           }
         })
+        
         setSelectedOptions(initialOptions)
       } catch (error) {
         console.error('Error fetching menu item:', error)
@@ -70,8 +75,8 @@ export default function MenuOption() {
       const newOptions = { ...prev }
       const option = menuItem.menuOptions.find(opt => opt.id === optionId)
       
-      // For single-select options (SIZE, SPICY), replace the previous selection
-      if (optionType === 'SIZE' || optionType === 'SPICY') {
+      // For single-select options (SIZE, SPICY, MENU), replace the previous selection
+      if (optionType === 'SIZE' || optionType === 'SPICY' || optionType === 'MENU') {
         // Remove previous selection of the same type
         Object.keys(newOptions).forEach(key => {
           const existingOption = menuItem.menuOptions.find(opt => opt.id === key)
@@ -111,7 +116,8 @@ export default function MenuOption() {
     const restaurantRestriction = checkRestaurantRestriction(menuItem)
     
     if (!restaurantRestriction.isValid) {
-      // Show warning message
+      // Show warning message with data from CartContext
+      setRestaurantWarningData(restaurantRestriction)
       setShowRestaurantWarning(true)
     } else {
       // Add to cart and go back
@@ -157,7 +163,7 @@ export default function MenuOption() {
         {/* Dynamic Options based on menuOptions */}
         {menuItem.menuOptions && menuItem.menuOptions.length > 0 && (
           <div className="px-4 py-4">
-            {['SIZE', 'SPICY', 'ADDITIONAL'].map(optionType => {
+            {['SIZE', 'SPICY', 'ADDITIONAL', 'MENU'].map(optionType => {
               const optionsOfType = menuItem.menuOptions.filter(option => option.type === optionType)
               if (optionsOfType.length === 0) return null
 
@@ -166,28 +172,25 @@ export default function MenuOption() {
                   <h2 className="text-lg font-bold text-chop-brown mb-4 font-jakarta">
                     {optionType === 'SIZE' ? 'Size' : 
                      optionType === 'SPICY' ? 'Spice Level' : 
+                     optionType === 'MENU' ? 'Menu Options' :
                      'Add-ons'}
                   </h2>
                   
                   {optionType === 'ADDITIONAL' ? (
                     // Multi-select for additional options
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {optionsOfType.map((option) => (
-                        <div key={option.id} className="flex items-center justify-between py-3">
-                          <div className="flex-1">
-                            <span className="text-chop-brown text-base">{getTranslatedField(option, 'name', currentLanguage)}</span>
-                            {option.price > 0 && (
-                              <span className="text-chop-orange text-sm ml-2">
-                                +₩{option.price.toLocaleString()}
-                              </span>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => handleOptionChange(option.id, option.type)}
-                            className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                        <button
+                          key={option.id}
+                          onClick={() => handleOptionChange(option.id, option.type)}
+                          className="w-full flex items-center gap-3 py-3 px-2 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          {/* Checkbox */}
+                          <div
+                            className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                               selectedOptions[option.id]
                                 ? 'bg-chop-orange border-chop-orange'
-                                : 'border-chop-border bg-white'
+                                : 'border-gray-300 bg-white'
                             }`}
                           >
                             {selectedOptions[option.id] && (
@@ -195,27 +198,52 @@ export default function MenuOption() {
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                               </svg>
                             )}
-                          </button>
-                        </div>
+                          </div>
+                          {/* Label */}
+                          <div className="flex items-center justify-between flex-1">
+                            <span className="text-chop-brown text-base text-left">{getTranslatedField(option, 'name', currentLanguage)}</span>
+                            {option.price > 0 && (
+                              <span className="text-chop-orange text-sm font-medium">
+                                +₩{option.price.toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+    
                       ))}
                     </div>
                   ) : (
                     // Single-select for size and spice options
-                    <div className="flex gap-3 flex-wrap">
+                    <div className="space-y-2">
                       {optionsOfType.map((option) => (
                         <button
                           key={option.id}
                           onClick={() => handleOptionChange(option.id, option.type)}
-                          className={`px-4 py-3 rounded-lg border text-sm font-medium transition-colors ${
-                            selectedOptions[option.id]
-                              ? 'border-chop-orange bg-chop-orange text-white'
-                              : 'border-chop-border bg-white text-chop-brown'
-                          }`}
+                          className="w-full flex items-center gap-3 py-3 px-2 hover:bg-gray-50 rounded-lg transition-colors"
                         >
-                          {getTranslatedField(option, 'name', currentLanguage)}
-                          {option.price > 0 && (
-                            <span className="ml-1">+₩{option.price.toLocaleString()}</span>
-                          )}
+                          {/* Radio Button */}
+                          <div
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                              selectedOptions[option.id]
+                                ? 'border-chop-orange'
+                                : 'border-gray-300'
+                            }`}
+                          >
+                            {selectedOptions[option.id] && (
+                              <div className="w-3 h-3 rounded-full bg-chop-orange"></div>
+                            )}
+                          </div>
+                          {/* Label */}
+                          <div className="flex items-center justify-between flex-1">
+                            <span className="text-chop-brown text-base text-left">
+                              {getTranslatedField(option, 'name', currentLanguage)}
+                            </span>
+                            {option.price > 0 && (
+                              <span className="text-chop-orange text-sm font-medium">
+                                +₩{option.price.toLocaleString()}
+                              </span>
+                            )}
+                          </div>
                         </button>
                       ))}
                     </div>
@@ -269,7 +297,7 @@ export default function MenuOption() {
       )}
 
       {/* Restaurant Restriction Warning - Fixed at bottom when shown */}
-      {showRestaurantWarning && (
+      {showRestaurantWarning && restaurantWarningData && (
         <div className="fixed bottom-0 left-0 right-0 bg-yellow-50 border-t border-yellow-200 z-10">
           <div className="px-4 py-3">
             <div className="flex items-start gap-3">
@@ -278,7 +306,7 @@ export default function MenuOption() {
               </svg>
               <div className="flex-1">
                 <p className="text-sm text-yellow-800 font-medium mb-3">
-                  You can only order from one restaurant at a time. Clear your cart to order from "{menuItem?.restaurant?.name}".
+                  {restaurantWarningData.message}
                 </p>
                 <div className="flex gap-2">
                   <button

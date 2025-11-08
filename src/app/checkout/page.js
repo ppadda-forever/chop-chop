@@ -146,6 +146,12 @@ export default function Checkout() {
       return
     }
 
+    // 배송 주소 필수 체크
+    if (!deliveryAddress || deliveryAddress.trim() === '') {
+      alert(t('checkout', 'addressRequired', currentLanguage) || 'Please enter a delivery address')
+      return
+    }
+
     analytics.trackOrderPlaceClick(total) // 버튼 클릭 시점 추적
 
     // 주문 데이터 준비
@@ -224,8 +230,10 @@ export default function Checkout() {
 
         {/* Delivery Address */}
         <div className="bg-white rounded-lg p-4 mb-4">
-          <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta">
+          <h2 className="text-lg font-bold text-chop-brown mb-3 font-jakarta flex items-center">
             {t('checkout', 'deliveryInfo', currentLanguage)}
+            <span className="text-red-500 ml-1">*</span>
+            <span className="text-xs text-red-500 ml-2 font-normal">Required</span>
           </h2>
           {accommodation && (
             <div className="mb-2 p-2 bg-chop-cream rounded-lg">
@@ -237,13 +245,21 @@ export default function Checkout() {
           <textarea
             value={deliveryAddress}
             onChange={(e) => accommodation ? null : setDeliveryAddress(e.target.value)}
-            placeholder={accommodation ? "Address auto-filled from accommodation" : "Enter your delivery address..."}
-            className={`w-full p-3 border border-chop-border rounded-lg text-chop-brown ${
-              accommodation ? 'bg-gray-100 cursor-not-allowed' : ''
+            placeholder={accommodation ? "Address auto-filled from accommodation" : "Enter your delivery address... *"}
+            className={`w-full p-3 border rounded-lg text-chop-brown transition-colors ${
+              accommodation 
+                ? 'bg-gray-100 cursor-not-allowed border-chop-border' 
+                : deliveryAddress.trim() === '' 
+                  ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200' 
+                  : 'border-chop-border focus:border-chop-orange focus:ring-2 focus:ring-orange-200'
             }`}
             rows={3}
             disabled={!!accommodation}
+            required
           />
+          {!accommodation && deliveryAddress.trim() === '' && (
+            <p className="text-xs text-red-500 mt-1">Please enter your delivery address</p>
+          )}
         </div>
 
         {/* Special Instructions */}
@@ -332,7 +348,7 @@ export default function Checkout() {
             </div>
           </div>
         )}
-        
+                
         <div className="px-4 py-3">
           <button 
             onClick={handlePayment}
@@ -340,9 +356,11 @@ export default function Checkout() {
               isLoading || 
               items.length === 0 || 
               !minOrderCheck.isValid || 
+              !deliveryAddress || 
+              deliveryAddress.trim() === '' ||
               (PAYMENT_METHODS[paymentMethod]?.requiresExchange && !exchangeRate)
             }
-            className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors disabled:bg-gray-400 shadow-lg"
+            className="w-full bg-chop-orange text-white py-3 rounded-lg font-bold text-base hover:bg-orange-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg"
           >
             {isLoading ? t('common', 'loading', currentLanguage) : 
              `${t('checkout', 'placeOrder', currentLanguage)} (₩${total.toLocaleString()})`}
