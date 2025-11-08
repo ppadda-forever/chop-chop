@@ -56,8 +56,11 @@ export const processPayPalPayment = async (orderData, total, setLoading, onSucce
     localStorage.setItem('pendingOrder', JSON.stringify(orderData))
     localStorage.setItem('paypalOrderId', order.id)
     
-    // PayPal 결제 페이지로 리다이렉트 (현재 페이지에서)
-    const paypalUrl = `https://www.sandbox.paypal.com/checkoutnow?token=${order.id}`
+    // PayPal 결제 페이지로 리다이렉트 (환경에 따라 다른 URL)
+    const isLive = process.env.NEXT_PUBLIC_PAYPAL_ENVIRONMENT === 'live'
+    const paypalBaseUrl = isLive ? 'https://www.paypal.com' : 'https://www.sandbox.paypal.com'
+    const paypalUrl = `${paypalBaseUrl}/checkoutnow?token=${order.id}`
+    console.log('Redirecting to PayPal:', paypalUrl)
     window.location.href = paypalUrl
     
   } catch (error) {

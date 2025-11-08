@@ -86,26 +86,32 @@ export async function createPayPalOrder(amount, currency) {
  * PayPal 주문 캡처 (결제 승인)
  */
 export async function capturePayPalOrder(orderID) {
+  console.log('[PayPal Lib] Capturing order:', orderID)
   const accessToken = await generateAccessToken()
+  console.log('[PayPal Lib] Access token obtained')
 
-  const response = await fetch(
-    `${PAYPAL_API_BASE}/v2/checkout/orders/${orderID}/capture`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  )
+  const captureUrl = `${PAYPAL_API_BASE}/v2/checkout/orders/${orderID}/capture`
+  console.log('[PayPal Lib] Capture URL:', captureUrl)
+
+  const response = await fetch(captureUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+
+  console.log('[PayPal Lib] Capture response status:', response.status)
 
   if (!response.ok) {
     const errorData = await response.json()
-    console.error('PayPal capture order error:', errorData)
-    throw new Error(`PayPal capture failed: ${response.status}`)
+    console.error('[PayPal Lib] ❌ Capture order error:', errorData)
+    throw new Error(`PayPal capture failed: ${response.status} - ${JSON.stringify(errorData)}`)
   }
 
-  return response.json()
+  const captureData = await response.json()
+  console.log('[PayPal Lib] ✅ Capture successful')
+  return captureData
 }
 
 /**

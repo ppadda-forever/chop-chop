@@ -15,13 +15,18 @@ function PayPalSuccessContent() {
   useEffect(() => {
     const processPayment = async () => {
       try {
+        console.log('=== PayPal Success Page ===')
+        console.log('1. URL Search Params:', Object.fromEntries(searchParams.entries()))
+        
         const orderID = searchParams.get('token')
+        console.log('2. PayPal Order ID:', orderID)
         
         if (!orderID) {
           throw new Error('Order ID not found')
         }
 
         // PayPal 주문 캡처
+        console.log('3. Calling capture-order API...')
         const response = await fetch('/api/paypal/capture-order', {
           method: 'POST',
           headers: {
@@ -30,14 +35,19 @@ function PayPalSuccessContent() {
           body: JSON.stringify({ orderID }),
         })
 
+        console.log('4. Capture response status:', response.status)
+
         if (!response.ok) {
           const errorData = await response.json()
+          console.error('5. Capture failed:', errorData)
           throw new Error(errorData.error || 'Payment capture failed')
         }
 
         const result = await response.json()
+        console.log('6. Capture result:', result)
         
         if (result.success) {
+          console.log('7. Creating order in database...')
           // 결제 성공 - 주문 생성
           await createOrderAfterPayPalPayment(
             {
@@ -49,11 +59,12 @@ function PayPalSuccessContent() {
             setLoading,
             (order) => {
               // 주문 생성 성공 - 카트 비우기 및 확인 페이지로 이동
+              console.log('8. ✅ Order created successfully:', order.id)
               clearCart()
               router.push(`/checkout-confirmation?orderId=${order.id}`)
             },
             (error) => {
-              console.error('Order creation error:', error)
+              console.error('9. ❌ Order creation error:', error)
               setError(error.message)
             }
           )
@@ -61,13 +72,14 @@ function PayPalSuccessContent() {
           throw new Error('Payment was not completed successfully')
         }
       } catch (error) {
-        console.error('Payment processing error:', error)
+        console.error('❌ Payment processing error:', error)
+        console.error('Error stack:', error.stack)
         setError(error.message)
       }
     }
 
     processPayment()
-  }, [searchParams, router])
+  }, [searchParams, router, clearCart])
 
   if (loading) {
     return (
