@@ -27,28 +27,36 @@ export default function MenuOption() {
         const data = await getMenuItemById(id)
         setMenuItem(data)
         
-        // Initialize selected options with default values
-        const initialOptions = {}
-        const types = ['SIZE', 'SPICY', 'MENU']
-        types.forEach(type => {
-          const requiredOptionsOfType = data.menuOptions
-            .filter(opt => opt.type === type && opt.isRequired)
-            .sort((a, b) => a.sortOrder - b.sortOrder) // sortOrder 기준 오름차순 정렬
-          
-          if (requiredOptionsOfType.length > 0) {
-            const firstOption = requiredOptionsOfType[0] // 첫 번째 옵션 선택
-            initialOptions[firstOption.id] = firstOption
+        // Initialize selected options ONLY if empty
+        setSelectedOptions(prev => {
+          // 이미 선택된 옵션이 있으면 초기화하지 않음
+          if (Object.keys(prev).length > 0) {
+            return prev
           }
+          
+          // 처음에만 초기값 설정
+          const initialOptions = {}
+          const types = ['SIZE', 'SPICY', 'MENU']
+          types.forEach(type => {
+            const requiredOptionsOfType = data.menuOptions
+              .filter(opt => opt.type === type && opt.isRequired)
+              .sort((a, b) => a.sortOrder - b.sortOrder)
+            
+            if (requiredOptionsOfType.length > 0) {
+              const firstOption = requiredOptionsOfType[0]
+              initialOptions[firstOption.id] = firstOption
+            }
+          })
+          
+          return initialOptions
         })
-        
-        setSelectedOptions(initialOptions)
       } catch (error) {
         console.error('Error fetching menu item:', error)
       } finally {
         setLoading(false)
       }
     }
-
+  
     if (id) {
       fetchMenuItem()
     }
@@ -71,9 +79,20 @@ export default function MenuOption() {
   }
 
   const handleOptionChange = (optionId, optionType) => {
+    // menuItem이 없으면 early return
+    if (!menuItem || !menuItem.menuOptions) {
+      return
+    }
+    
+    const option = menuItem.menuOptions.find(opt => opt.id === optionId)
+    
+    if (!option) {
+      console.warn('Option not found:', optionId)
+      return
+    }
+    
     setSelectedOptions(prev => {
       const newOptions = { ...prev }
-      const option = menuItem.menuOptions.find(opt => opt.id === optionId)
       
       // For single-select options (SIZE, SPICY, MENU), replace the previous selection
       if (optionType === 'SIZE' || optionType === 'SPICY' || optionType === 'MENU') {
