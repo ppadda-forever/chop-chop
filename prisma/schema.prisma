@@ -227,6 +227,7 @@ enum OptionType {
   SIZE
   SPICY
   ADDITIONAL
+  MENU
 
   @@map("option_type")
 }

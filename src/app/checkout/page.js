@@ -10,8 +10,8 @@ import { processPayment } from '../../services/paymentService'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { getTranslatedField, t } from '../../utils/translation'
 
-// 결제 수단별 설정
-const PAYMENT_METHODS = {
+// 모든 결제 수단 정의
+const ALL_PAYMENT_METHODS = {
   card: {
     id: 'card',
     name: 'Credit Card',
@@ -40,11 +40,32 @@ const PAYMENT_METHODS = {
   }
 }
 
+// 환경에 따라 결제 수단 필터링
+// development: card + paypal
+// production: paypal만
+const getPaymentMethodsByEnvironment = () => {
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  
+  if (isDevelopment) {
+    // 개발 환경: 모든 결제 수단
+    return ALL_PAYMENT_METHODS
+  } else {
+    // 프로덕션 환경: PayPal만
+    return {
+      paypal: ALL_PAYMENT_METHODS.paypal
+    }
+  }
+}
+
+// 결제 수단별 설정
+const PAYMENT_METHODS = getPaymentMethodsByEnvironment()
+
 export default function Checkout() {
   const router = useRouter()
   const { currentLanguage } = useLanguage()
   const { items, getTotalPrice, getCartItemsByRestaurant, clearCart, checkMinOrderAmount } = useCart()
-  const [paymentMethod, setPaymentMethod] = useState('card')
+  // 첫 번째 사용 가능한 결제 수단을 기본값으로 설정 (dev: card, prod: paypal)
+  const [paymentMethod, setPaymentMethod] = useState(Object.keys(PAYMENT_METHODS)[0])
   const [deliveryAddress, setDeliveryAddress] = useState('')
   const [notes, setNotes] = useState('')
   const [isLoading, setIsLoading] = useState(false)
