@@ -28,10 +28,6 @@ export default function Help() {
       answer: t('help', 'cancelOrderAnswer', currentLanguage)
     },
     {
-      question: t('help', 'deliveryArea', currentLanguage),
-      answer: t('help', 'deliveryAreaAnswer', currentLanguage)
-    },
-    {
       question: t('help', 'wrongOrder', currentLanguage),
       answer: t('help', 'wrongOrderAnswer', currentLanguage)
     }

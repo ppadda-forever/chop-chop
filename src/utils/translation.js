@@ -631,12 +631,6 @@ export const translations = {
       cn: '付款完成后无法取消。',
       ko: '결제가 완료된 다음에는 취소가 불가능합니다.'
     },
-    deliveryArea: {
-      en: 'Do you deliver to my area?',
-      ja: '私の地域に配達していますか？',
-      cn: '你们配送到我所在的地区吗？',
-      ko: '제 지역까지 배달하나요?'
-    },
     wrongOrder: {
       en: 'What if my order is wrong or missing items?',
       ja: '注文に間違いがあったり、品物が不足している場合は？',
